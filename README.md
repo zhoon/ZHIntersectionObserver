@@ -36,4 +36,4 @@
 
 **Demo演示（具体使用可以参考项目代码）**
 
-![DemoGif](./IntersectionObserver.gif)
+![DemoGif](https://github.com/zhoon/ZHIntersectionObserver/blob/main/IntersectionObserver.gif)
