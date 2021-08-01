@@ -1,0 +1,661 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		FE18C0DB26969B23005F94D4 /* ZHExample1ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FE18C0DA26969B23005F94D4 /* ZHExample1ViewController.m */; };
+		FE18C0DE2696C0CD005F94D4 /* ZHExample2ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FE18C0DD2696C0CD005F94D4 /* ZHExample2ViewController.m */; };
+		FE966A70269AF8DB00EB89B7 /* ZHExample3ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FE966A6F269AF8DB00EB89B7 /* ZHExample3ViewController.m */; };
+		FEF6F9BB2695885200441571 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = FEF6F9BA2695885200441571 /* AppDelegate.m */; };
+		FEF6F9BE2695885200441571 /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = FEF6F9BD2695885200441571 /* SceneDelegate.m */; };
+		FEF6F9C62695885300441571 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FEF6F9C52695885300441571 /* Assets.xcassets */; };
+		FEF6F9C92695885300441571 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FEF6F9C72695885300441571 /* LaunchScreen.storyboard */; };
+		FEF6F9CC2695885300441571 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = FEF6F9CB2695885300441571 /* main.m */; };
+		FEF6F9D62695885400441571 /* ZHIntersectionObserverTests.m in Sources */ = {isa = PBXBuildFile; fileRef = FEF6F9D52695885400441571 /* ZHIntersectionObserverTests.m */; };
+		FEF6F9E12695885400441571 /* ZHIntersectionObserverUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = FEF6F9E02695885400441571 /* ZHIntersectionObserverUITests.m */; };
+		FEF6F9F526958BB600441571 /* UIView+IntersectionObserver.m in Sources */ = {isa = PBXBuildFile; fileRef = FEF6F9F226958BB600441571 /* UIView+IntersectionObserver.m */; };
+		FEF6F9F626958BB600441571 /* UIScrollView+IntersectionObserver.m in Sources */ = {isa = PBXBuildFile; fileRef = FEF6F9F326958BB600441571 /* UIScrollView+IntersectionObserver.m */; };
+		FEF6FA0226958BD400441571 /* IntersectionObserver.m in Sources */ = {isa = PBXBuildFile; fileRef = FEF6F9F926958BD400441571 /* IntersectionObserver.m */; };
+		FEF6FA0326958BD400441571 /* IntersectionObserverEntry.m in Sources */ = {isa = PBXBuildFile; fileRef = FEF6F9FB26958BD400441571 /* IntersectionObserverEntry.m */; };
+		FEF6FA0426958BD400441571 /* IntersectionObserverOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = FEF6F9FE26958BD400441571 /* IntersectionObserverOptions.m */; };
+		FEF6FA0526958BD400441571 /* IntersectionObserverManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FEF6F9FF26958BD400441571 /* IntersectionObserverManager.m */; };
+		FEF6FA0626958BD400441571 /* IntersectionObserverUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = FEF6FA0126958BD400441571 /* IntersectionObserverUtils.m */; };
+		FEF6FA0926958F3200441571 /* ZHExampleTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FEF6FA0826958F3200441571 /* ZHExampleTableViewController.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		FEF6F9D22695885400441571 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = FEF6F9AE2695885200441571 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = FEF6F9B52695885200441571;
+			remoteInfo = ZHIntersectionObserver;
+		};
+		FEF6F9DD2695885400441571 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = FEF6F9AE2695885200441571 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = FEF6F9B52695885200441571;
+			remoteInfo = ZHIntersectionObserver;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		FE18C0D926969B23005F94D4 /* ZHExample1ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZHExample1ViewController.h; sourceTree = "<group>"; };
+		FE18C0DA26969B23005F94D4 /* ZHExample1ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZHExample1ViewController.m; sourceTree = "<group>"; };
+		FE18C0DC2696C0CD005F94D4 /* ZHExample2ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZHExample2ViewController.h; sourceTree = "<group>"; };
+		FE18C0DD2696C0CD005F94D4 /* ZHExample2ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZHExample2ViewController.m; sourceTree = "<group>"; };
+		FE966A6E269AF8DB00EB89B7 /* ZHExample3ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZHExample3ViewController.h; sourceTree = "<group>"; };
+		FE966A6F269AF8DB00EB89B7 /* ZHExample3ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZHExample3ViewController.m; sourceTree = "<group>"; };
+		FEF6F9B62695885200441571 /* ZHIntersectionObserver.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ZHIntersectionObserver.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		FEF6F9B92695885200441571 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		FEF6F9BA2695885200441571 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		FEF6F9BC2695885200441571 /* SceneDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SceneDelegate.h; sourceTree = "<group>"; };
+		FEF6F9BD2695885200441571 /* SceneDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SceneDelegate.m; sourceTree = "<group>"; };
+		FEF6F9C52695885300441571 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		FEF6F9C82695885300441571 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		FEF6F9CA2695885300441571 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		FEF6F9CB2695885300441571 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		FEF6F9D12695885400441571 /* ZHIntersectionObserverTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ZHIntersectionObserverTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		FEF6F9D52695885400441571 /* ZHIntersectionObserverTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZHIntersectionObserverTests.m; sourceTree = "<group>"; };
+		FEF6F9D72695885400441571 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		FEF6F9DC2695885400441571 /* ZHIntersectionObserverUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ZHIntersectionObserverUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		FEF6F9E02695885400441571 /* ZHIntersectionObserverUITests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZHIntersectionObserverUITests.m; sourceTree = "<group>"; };
+		FEF6F9E22695885400441571 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		FEF6F9F126958BB600441571 /* UIScrollView+IntersectionObserver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIScrollView+IntersectionObserver.h"; sourceTree = "<group>"; };
+		FEF6F9F226958BB600441571 /* UIView+IntersectionObserver.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIView+IntersectionObserver.m"; sourceTree = "<group>"; };
+		FEF6F9F326958BB600441571 /* UIScrollView+IntersectionObserver.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIScrollView+IntersectionObserver.m"; sourceTree = "<group>"; };
+		FEF6F9F426958BB600441571 /* UIView+IntersectionObserver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIView+IntersectionObserver.h"; sourceTree = "<group>"; };
+		FEF6F9F726958BC100441571 /* IntersectionObserverHeader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IntersectionObserverHeader.h; sourceTree = "<group>"; };
+		FEF6F9F826958BD400441571 /* IntersectionObserverManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IntersectionObserverManager.h; sourceTree = "<group>"; };
+		FEF6F9F926958BD400441571 /* IntersectionObserver.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IntersectionObserver.m; sourceTree = "<group>"; };
+		FEF6F9FA26958BD400441571 /* IntersectionObserver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IntersectionObserver.h; sourceTree = "<group>"; };
+		FEF6F9FB26958BD400441571 /* IntersectionObserverEntry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IntersectionObserverEntry.m; sourceTree = "<group>"; };
+		FEF6F9FC26958BD400441571 /* IntersectionObserverUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IntersectionObserverUtils.h; sourceTree = "<group>"; };
+		FEF6F9FD26958BD400441571 /* IntersectionObserverEntry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IntersectionObserverEntry.h; sourceTree = "<group>"; };
+		FEF6F9FE26958BD400441571 /* IntersectionObserverOptions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IntersectionObserverOptions.m; sourceTree = "<group>"; };
+		FEF6F9FF26958BD400441571 /* IntersectionObserverManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IntersectionObserverManager.m; sourceTree = "<group>"; };
+		FEF6FA0026958BD400441571 /* IntersectionObserverOptions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IntersectionObserverOptions.h; sourceTree = "<group>"; };
+		FEF6FA0126958BD400441571 /* IntersectionObserverUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IntersectionObserverUtils.m; sourceTree = "<group>"; };
+		FEF6FA0726958F3200441571 /* ZHExampleTableViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZHExampleTableViewController.h; sourceTree = "<group>"; };
+		FEF6FA0826958F3200441571 /* ZHExampleTableViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZHExampleTableViewController.m; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		FEF6F9B32695885200441571 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FEF6F9CE2695885400441571 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FEF6F9D92695885400441571 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		FE18C0D826969AD5005F94D4 /* Pages */ = {
+			isa = PBXGroup;
+			children = (
+				FE18C0D926969B23005F94D4 /* ZHExample1ViewController.h */,
+				FE18C0DA26969B23005F94D4 /* ZHExample1ViewController.m */,
+				FE18C0DC2696C0CD005F94D4 /* ZHExample2ViewController.h */,
+				FE18C0DD2696C0CD005F94D4 /* ZHExample2ViewController.m */,
+				FE966A6E269AF8DB00EB89B7 /* ZHExample3ViewController.h */,
+				FE966A6F269AF8DB00EB89B7 /* ZHExample3ViewController.m */,
+			);
+			path = Pages;
+			sourceTree = "<group>";
+		};
+		FEF6F9AD2695885200441571 = {
+			isa = PBXGroup;
+			children = (
+				FEF6F9B82695885200441571 /* ZHIntersectionObserver */,
+				FEF6F9D42695885400441571 /* ZHIntersectionObserverTests */,
+				FEF6F9DF2695885400441571 /* ZHIntersectionObserverUITests */,
+				FEF6F9B72695885200441571 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		FEF6F9B72695885200441571 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				FEF6F9B62695885200441571 /* ZHIntersectionObserver.app */,
+				FEF6F9D12695885400441571 /* ZHIntersectionObserverTests.xctest */,
+				FEF6F9DC2695885400441571 /* ZHIntersectionObserverUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		FEF6F9B82695885200441571 /* ZHIntersectionObserver */ = {
+			isa = PBXGroup;
+			children = (
+				FEF6F9EE26958B2900441571 /* Source */,
+				FEF6F9EF26958B6000441571 /* Example */,
+				FEF6F9B92695885200441571 /* AppDelegate.h */,
+				FEF6F9BA2695885200441571 /* AppDelegate.m */,
+				FEF6F9BC2695885200441571 /* SceneDelegate.h */,
+				FEF6F9BD2695885200441571 /* SceneDelegate.m */,
+				FEF6F9C52695885300441571 /* Assets.xcassets */,
+				FEF6F9C72695885300441571 /* LaunchScreen.storyboard */,
+				FEF6F9CA2695885300441571 /* Info.plist */,
+				FEF6F9CB2695885300441571 /* main.m */,
+			);
+			path = ZHIntersectionObserver;
+			sourceTree = "<group>";
+		};
+		FEF6F9D42695885400441571 /* ZHIntersectionObserverTests */ = {
+			isa = PBXGroup;
+			children = (
+				FEF6F9D52695885400441571 /* ZHIntersectionObserverTests.m */,
+				FEF6F9D72695885400441571 /* Info.plist */,
+			);
+			path = ZHIntersectionObserverTests;
+			sourceTree = "<group>";
+		};
+		FEF6F9DF2695885400441571 /* ZHIntersectionObserverUITests */ = {
+			isa = PBXGroup;
+			children = (
+				FEF6F9E02695885400441571 /* ZHIntersectionObserverUITests.m */,
+				FEF6F9E22695885400441571 /* Info.plist */,
+			);
+			path = ZHIntersectionObserverUITests;
+			sourceTree = "<group>";
+		};
+		FEF6F9EE26958B2900441571 /* Source */ = {
+			isa = PBXGroup;
+			children = (
+				FEF6F9F726958BC100441571 /* IntersectionObserverHeader.h */,
+				FEF6F9FA26958BD400441571 /* IntersectionObserver.h */,
+				FEF6F9F926958BD400441571 /* IntersectionObserver.m */,
+				FEF6F9FD26958BD400441571 /* IntersectionObserverEntry.h */,
+				FEF6F9FB26958BD400441571 /* IntersectionObserverEntry.m */,
+				FEF6F9F826958BD400441571 /* IntersectionObserverManager.h */,
+				FEF6F9FF26958BD400441571 /* IntersectionObserverManager.m */,
+				FEF6FA0026958BD400441571 /* IntersectionObserverOptions.h */,
+				FEF6F9FE26958BD400441571 /* IntersectionObserverOptions.m */,
+				FEF6F9FC26958BD400441571 /* IntersectionObserverUtils.h */,
+				FEF6FA0126958BD400441571 /* IntersectionObserverUtils.m */,
+				FEF6F9F426958BB600441571 /* UIView+IntersectionObserver.h */,
+				FEF6F9F226958BB600441571 /* UIView+IntersectionObserver.m */,
+				FEF6F9F126958BB600441571 /* UIScrollView+IntersectionObserver.h */,
+				FEF6F9F326958BB600441571 /* UIScrollView+IntersectionObserver.m */,
+			);
+			path = Source;
+			sourceTree = "<group>";
+		};
+		FEF6F9EF26958B6000441571 /* Example */ = {
+			isa = PBXGroup;
+			children = (
+				FE18C0D826969AD5005F94D4 /* Pages */,
+				FEF6FA0726958F3200441571 /* ZHExampleTableViewController.h */,
+				FEF6FA0826958F3200441571 /* ZHExampleTableViewController.m */,
+			);
+			path = Example;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		FEF6F9B52695885200441571 /* ZHIntersectionObserver */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FEF6F9E52695885400441571 /* Build configuration list for PBXNativeTarget "ZHIntersectionObserver" */;
+			buildPhases = (
+				FEF6F9B22695885200441571 /* Sources */,
+				FEF6F9B32695885200441571 /* Frameworks */,
+				FEF6F9B42695885200441571 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ZHIntersectionObserver;
+			productName = ZHIntersectionObserver;
+			productReference = FEF6F9B62695885200441571 /* ZHIntersectionObserver.app */;
+			productType = "com.apple.product-type.application";
+		};
+		FEF6F9D02695885400441571 /* ZHIntersectionObserverTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FEF6F9E82695885400441571 /* Build configuration list for PBXNativeTarget "ZHIntersectionObserverTests" */;
+			buildPhases = (
+				FEF6F9CD2695885400441571 /* Sources */,
+				FEF6F9CE2695885400441571 /* Frameworks */,
+				FEF6F9CF2695885400441571 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				FEF6F9D32695885400441571 /* PBXTargetDependency */,
+			);
+			name = ZHIntersectionObserverTests;
+			productName = ZHIntersectionObserverTests;
+			productReference = FEF6F9D12695885400441571 /* ZHIntersectionObserverTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		FEF6F9DB2695885400441571 /* ZHIntersectionObserverUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FEF6F9EB2695885400441571 /* Build configuration list for PBXNativeTarget "ZHIntersectionObserverUITests" */;
+			buildPhases = (
+				FEF6F9D82695885400441571 /* Sources */,
+				FEF6F9D92695885400441571 /* Frameworks */,
+				FEF6F9DA2695885400441571 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				FEF6F9DE2695885400441571 /* PBXTargetDependency */,
+			);
+			name = ZHIntersectionObserverUITests;
+			productName = ZHIntersectionObserverUITests;
+			productReference = FEF6F9DC2695885400441571 /* ZHIntersectionObserverUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		FEF6F9AE2695885200441571 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1250;
+				TargetAttributes = {
+					FEF6F9B52695885200441571 = {
+						CreatedOnToolsVersion = 12.5.1;
+					};
+					FEF6F9D02695885400441571 = {
+						CreatedOnToolsVersion = 12.5.1;
+						TestTargetID = FEF6F9B52695885200441571;
+					};
+					FEF6F9DB2695885400441571 = {
+						CreatedOnToolsVersion = 12.5.1;
+						TestTargetID = FEF6F9B52695885200441571;
+					};
+				};
+			};
+			buildConfigurationList = FEF6F9B12695885200441571 /* Build configuration list for PBXProject "ZHIntersectionObserver" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = FEF6F9AD2695885200441571;
+			productRefGroup = FEF6F9B72695885200441571 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				FEF6F9B52695885200441571 /* ZHIntersectionObserver */,
+				FEF6F9D02695885400441571 /* ZHIntersectionObserverTests */,
+				FEF6F9DB2695885400441571 /* ZHIntersectionObserverUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		FEF6F9B42695885200441571 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FEF6F9C92695885300441571 /* LaunchScreen.storyboard in Resources */,
+				FEF6F9C62695885300441571 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FEF6F9CF2695885400441571 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FEF6F9DA2695885400441571 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		FEF6F9B22695885200441571 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FEF6FA0226958BD400441571 /* IntersectionObserver.m in Sources */,
+				FEF6F9BB2695885200441571 /* AppDelegate.m in Sources */,
+				FEF6F9F526958BB600441571 /* UIView+IntersectionObserver.m in Sources */,
+				FEF6FA0526958BD400441571 /* IntersectionObserverManager.m in Sources */,
+				FEF6FA0926958F3200441571 /* ZHExampleTableViewController.m in Sources */,
+				FE966A70269AF8DB00EB89B7 /* ZHExample3ViewController.m in Sources */,
+				FEF6F9CC2695885300441571 /* main.m in Sources */,
+				FEF6F9F626958BB600441571 /* UIScrollView+IntersectionObserver.m in Sources */,
+				FE18C0DB26969B23005F94D4 /* ZHExample1ViewController.m in Sources */,
+				FEF6F9BE2695885200441571 /* SceneDelegate.m in Sources */,
+				FE18C0DE2696C0CD005F94D4 /* ZHExample2ViewController.m in Sources */,
+				FEF6FA0426958BD400441571 /* IntersectionObserverOptions.m in Sources */,
+				FEF6FA0326958BD400441571 /* IntersectionObserverEntry.m in Sources */,
+				FEF6FA0626958BD400441571 /* IntersectionObserverUtils.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FEF6F9CD2695885400441571 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FEF6F9D62695885400441571 /* ZHIntersectionObserverTests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FEF6F9D82695885400441571 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FEF6F9E12695885400441571 /* ZHIntersectionObserverUITests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		FEF6F9D32695885400441571 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = FEF6F9B52695885200441571 /* ZHIntersectionObserver */;
+			targetProxy = FEF6F9D22695885400441571 /* PBXContainerItemProxy */;
+		};
+		FEF6F9DE2695885400441571 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = FEF6F9B52695885200441571 /* ZHIntersectionObserver */;
+			targetProxy = FEF6F9DD2695885400441571 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		FEF6F9C72695885300441571 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				FEF6F9C82695885300441571 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		FEF6F9E32695885400441571 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		FEF6F9E42695885400441571 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		FEF6F9E62695885400441571 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = ZHIntersectionObserver/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = ZhoonChen.ZHIntersectionObserver;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		FEF6F9E72695885400441571 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = ZHIntersectionObserver/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = ZhoonChen.ZHIntersectionObserver;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		FEF6F9E92695885400441571 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = ZHIntersectionObserverTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = ZhoonChen.ZHIntersectionObserverTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ZHIntersectionObserver.app/ZHIntersectionObserver";
+			};
+			name = Debug;
+		};
+		FEF6F9EA2695885400441571 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = ZHIntersectionObserverTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = ZhoonChen.ZHIntersectionObserverTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ZHIntersectionObserver.app/ZHIntersectionObserver";
+			};
+			name = Release;
+		};
+		FEF6F9EC2695885400441571 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = ZHIntersectionObserverUITests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = ZhoonChen.ZHIntersectionObserverUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = ZHIntersectionObserver;
+			};
+			name = Debug;
+		};
+		FEF6F9ED2695885400441571 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = ZHIntersectionObserverUITests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = ZhoonChen.ZHIntersectionObserverUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = ZHIntersectionObserver;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		FEF6F9B12695885200441571 /* Build configuration list for PBXProject "ZHIntersectionObserver" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FEF6F9E32695885400441571 /* Debug */,
+				FEF6F9E42695885400441571 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FEF6F9E52695885400441571 /* Build configuration list for PBXNativeTarget "ZHIntersectionObserver" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FEF6F9E62695885400441571 /* Debug */,
+				FEF6F9E72695885400441571 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FEF6F9E82695885400441571 /* Build configuration list for PBXNativeTarget "ZHIntersectionObserverTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FEF6F9E92695885400441571 /* Debug */,
+				FEF6F9EA2695885400441571 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FEF6F9EB2695885400441571 /* Build configuration list for PBXNativeTarget "ZHIntersectionObserverUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FEF6F9EC2695885400441571 /* Debug */,
+				FEF6F9ED2695885400441571 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = FEF6F9AE2695885200441571 /* Project object */;
+}
