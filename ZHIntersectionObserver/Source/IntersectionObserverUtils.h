@@ -68,7 +68,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 
 CG_INLINE BOOL
-HasOverrideSuperclassMethod(Class targetClass, SEL targetSelector) {
+IntersectionObserver_HasOverrideSuperclassMethod(Class targetClass, SEL targetSelector) {
     Method method = class_getInstanceMethod(targetClass, targetSelector);
     if (!method) return NO;
     
@@ -83,7 +83,7 @@ CG_INLINE BOOL
 IntersectionObserver_OverrideImplementation(Class targetClass, SEL targetSelector, id (^implementationBlock)(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void))) {
     Method originMethod = class_getInstanceMethod(targetClass, targetSelector);
     IMP imp = method_getImplementation(originMethod);
-    BOOL hasOverride = HasOverrideSuperclassMethod(targetClass, targetSelector);
+    BOOL hasOverride = IntersectionObserver_HasOverrideSuperclassMethod(targetClass, targetSelector);
     
     // 以 block 的方式达到实时获取初始方法的 IMP 的目的，从而避免先 swizzle 了 subclass 的方法，再 swizzle superclass 的方法，会发现前者调用时不会触发后者 swizzle 后的版本的 bug。
     IMP (^originalIMPProvider)(void) = ^IMP(void) {
