@@ -12,8 +12,13 @@
 - 支持数据变化自动检查曝光
 - 兼容 UITableViewCell 的复用
 
-**简单使用**
-
+**如何使用**
+```
+pod 'ZHIntersectionObserver'
+```
+```
+#import <ZHIntersectionObserver/IntersectionObserverHeader.h>
+```
 ```Objective-C
 UIView *containerView = [[UIView alloc] init];
 UIView *targetView = [[UIView alloc] init];
@@ -34,4 +39,6 @@ IntersectionObserverTargetOptions *targetOptions = [IntersectionObserverTargetOp
 targetView.intersectionObserverTargetOptions = targetOptions;
 ```
 
-**Demo演示（具体使用可以参考项目代码）**
+**支持iOS版本**
+
+iOS 11.0 及以上
