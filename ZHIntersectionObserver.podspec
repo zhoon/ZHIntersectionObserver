@@ -25,7 +25,8 @@ Pod::Spec.new do |spec|
   #   * Write the description between the DESC delimiters below.
   #   * Finally, don't worry about the indent, CocoaPods strips it!
   spec.description  = <<-DESC
-					Intersection Observer for iOS.
+					Intersection Observer for iOS. 
+					iOS 客户端检查曝光组件。
 					DESC
 
   spec.homepage     = "https://github.com/zhoon/ZHIntersectionObserver"
@@ -117,7 +118,7 @@ Pod::Spec.new do |spec|
   #  the lib prefix of their name.
   #
 
-  spec.framework  = "UIKit", "Foundation", "objc"
+  spec.framework  = "UIKit", "Foundation"
   # spec.frameworks = "SomeFramework", "AnotherFramework"
 
   # spec.library   = "iconv"
