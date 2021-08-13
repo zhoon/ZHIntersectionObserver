@@ -1,6 +1,4 @@
-**Intersection Observer for iOS**
-
-**iOS客户端检查曝光组件**
+**Intersection Observer for iOS. iOS 客户端检查曝光组件。**
 
 **特性列表**
 
