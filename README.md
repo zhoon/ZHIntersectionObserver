@@ -20,7 +20,9 @@ pod 'ZHIntersectionObserver'
 ```Objective-C
 UIView *containerView = [[UIView alloc] init];
 UIView *targetView = [[UIView alloc] init];
+
 __weak __typeof(self)weakSelf = self;
+
 IntersectionObserverContainerOptions *containerOptions = [IntersectionObserverContainerOptions initOptionsWithScope:@"Example1" rootMargin:UIEdgeInsetsMake(CGRectGetMaxY(self.navigationController.navigationBar.frame), 0, 0, 0) thresholds:@[1] containerView:containerView intersectionDuration:300 callback:^(NSString * _Nonnull scope, NSArray<IntersectionObserverEntry *> * _Nonnull entries) {
     __strong __typeof(weakSelf)strongSelf = weakSelf;
     for (NSInteger i = 0; i < entries.count; i++) {
@@ -32,7 +34,9 @@ IntersectionObserverContainerOptions *containerOptions = [IntersectionObserverCo
         }
     }
 }];
+
 containerView.intersectionObserverContainerOptions = containerOptions;
+
 IntersectionObserverTargetOptions *targetOptions = [IntersectionObserverTargetOptions initOptionsWithScope:@"Example1" targetView:targetView];
 targetView.intersectionObserverTargetOptions = targetOptions;
 ```
