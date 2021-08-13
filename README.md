@@ -1,6 +1,7 @@
-**iOS 客户端检查曝光组件。Intersection Observer for iOS.**
+# iOS 客户端检查曝光组件 (Intersection Observer for iOS).
+在客户端中如果需要实现曝光打点的需求，经常会遇到各种各样的问题，例如：该在什么时机去打点；复用的 view 打点混乱；切换界面或者切换 APP 前后台需不需要打点；打点代码难维护等等。 ZHIntersectionObserver 就是为了解决这个问题而诞生的。
 
-**特性列表**
+## 特性列表
 
 - 支持设置多个临界点（thresholds）
 - 支持控制列表滚动检查曝光的频率（throttle）
@@ -10,7 +11,21 @@
 - 支持数据变化自动检查曝光
 - 兼容 UITableViewCell 的复用
 
-**如何使用**
+## Demo演示
+
+### 基础曝光功能：
+
+<img src="/images/intersection_observer_1.gif" alt="基础曝光功能" width="320"/>
+
+### 延迟曝光 / Cell 的复用：
+
+<img src="/images/intersection_observer_2.gif" alt="延迟曝光 / Cell 的复用" width="320"/>
+
+### 数据变化触发曝光：
+
+<img src="/images/intersection_observer_3.gif" alt="数据变化触发曝光" width="320"/>
+
+## 如何使用
 ```
 pod 'ZHIntersectionObserver'
 ```
@@ -41,6 +56,6 @@ IntersectionObserverTargetOptions *targetOptions = [IntersectionObserverTargetOp
 targetView.intersectionObserverTargetOptions = targetOptions;
 ```
 
-**支持iOS版本**
+## 支持iOS版本
 
 iOS 11.0 及以上
