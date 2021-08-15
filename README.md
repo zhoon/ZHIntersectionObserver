@@ -1,4 +1,4 @@
-# iOS 客户端检查曝光组件 (Intersection Observer for iOS).
+# 简单易用的 iOS 曝光打点组件 (Intersection Observer for iOS).
 在客户端中如果需要实现曝光打点的需求，经常会遇到各种各样的问题，例如：该在什么时机去打点；复用的 view 打点混乱；切换界面或者切换 APP 前后台需不需要打点；打点代码难维护等等。 ZHIntersectionObserver 就是为了解决这个问题而诞生的。
 
 ## 特性列表
