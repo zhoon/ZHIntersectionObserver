@@ -188,6 +188,7 @@
         BOOL needReportDelay = [oldEntry.dataKey isEqualToString:options.dataKey] && isInsectingChanged;
         
         if (!needReportDelay) {
+            /*
             if (needReportDelay) {
                 IntersectionObserverEntry *entry =
                     [IntersectionObserverEntry initEntryWithTarget:targetView
@@ -199,7 +200,7 @@
                                                         rootBounds:containerView.bounds
                                                               time:floor([NSDate date].timeIntervalSince1970 * 1000)];
                 [filterEntries addObject:entry];
-            }
+            } */
             continue;
         }
         
