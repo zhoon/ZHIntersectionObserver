@@ -79,27 +79,29 @@
         
         // 复用 view，发送复用前数据的 isInsecting = NO 事件
         if (options.dataKey && options.dataKey.length > 0 && ![options.dataKey isEqualToString:options.previousDataKey] && options.previousFixedInsecting) {
-            IntersectionObserverEntry *entry = [IntersectionObserverEntry initEntryWithTarget:curTargetView
-                                                                                         data:options.previousData
-                                                                           boundingClientRect:viewportTargetRect
-                                                                            intersectionRatio:ratio
-                                                                             intersectionRect:intersectionRect
-                                                                                  isInsecting:NO
-                                                                                   rootBounds:containerView.bounds
-                                                                                         time:floor([NSDate date].timeIntervalSince1970 * 1000)];
+            IntersectionObserverEntry *entry =
+                [IntersectionObserverEntry initEntryWithTarget:curTargetView
+                                                          data:options.previousData
+                                            boundingClientRect:viewportTargetRect
+                                             intersectionRatio:ratio
+                                              intersectionRect:intersectionRect
+                                                   isInsecting:NO
+                                                    rootBounds:containerView.bounds
+                                                          time:floor([NSDate date].timeIntervalSince1970 * 1000)];
             options.previousFixedInsecting = NO;
             [reusedEntries addObject:entry];
         }
         
         if (needReport) {
-            IntersectionObserverEntry *entry = [IntersectionObserverEntry initEntryWithTarget:curTargetView
-                                                                                         data:options.data
-                                                                           boundingClientRect:viewportTargetRect
-                                                                            intersectionRatio:ratio
-                                                                             intersectionRect:intersectionRect
-                                                                                  isInsecting:isInsecting
-                                                                                   rootBounds:containerView.bounds
-                                                                                         time:floor([NSDate date].timeIntervalSince1970 * 1000)];
+            IntersectionObserverEntry *entry =
+                [IntersectionObserverEntry initEntryWithTarget:curTargetView
+                                                          data:options.data
+                                            boundingClientRect:viewportTargetRect
+                                             intersectionRatio:ratio
+                                              intersectionRect:intersectionRect
+                                                   isInsecting:isInsecting
+                                                    rootBounds:containerView.bounds
+                                                          time:floor([NSDate date].timeIntervalSince1970 * 1000)];
             entry.dataKey = options.dataKey;
             if (!delayReport) {
                 options.previousInsecting = isInsecting;
@@ -187,27 +189,29 @@
         
         if (!needReportDelay) {
             if (needReportDelay) {
-                IntersectionObserverEntry *entry = [IntersectionObserverEntry initEntryWithTarget:targetView
-                                                                                             data:oldEntry.data
-                                                                               boundingClientRect:viewportTargetRect
-                                                                                intersectionRatio:ratio
-                                                                                 intersectionRect:intersectionRect
-                                                                                      isInsecting:NO
-                                                                                       rootBounds:containerView.bounds
-                                                                                             time:floor([NSDate date].timeIntervalSince1970 * 1000)];
+                IntersectionObserverEntry *entry =
+                    [IntersectionObserverEntry initEntryWithTarget:targetView
+                                                              data:oldEntry.data
+                                                boundingClientRect:viewportTargetRect
+                                                 intersectionRatio:ratio
+                                                  intersectionRect:intersectionRect
+                                                       isInsecting:NO
+                                                        rootBounds:containerView.bounds
+                                                              time:floor([NSDate date].timeIntervalSince1970 * 1000)];
                 [filterEntries addObject:entry];
             }
             continue;
         }
         
-        IntersectionObserverEntry *entry = [IntersectionObserverEntry initEntryWithTarget:targetView
-                                                                                     data:oldEntry.data
-                                                                       boundingClientRect:viewportTargetRect
-                                                                        intersectionRatio:ratio
-                                                                         intersectionRect:intersectionRect
-                                                                              isInsecting:isInsecting
-                                                                               rootBounds:containerView.bounds
-                                                                                     time:floor([NSDate date].timeIntervalSince1970 * 1000)];
+        IntersectionObserverEntry *entry =
+            [IntersectionObserverEntry initEntryWithTarget:targetView
+                                                      data:oldEntry.data
+                                        boundingClientRect:viewportTargetRect
+                                         intersectionRatio:ratio
+                                          intersectionRect:intersectionRect
+                                               isInsecting:isInsecting
+                                                rootBounds:containerView.bounds
+                                                      time:floor([NSDate date].timeIntervalSince1970 * 1000)];
         [filterEntries addObject:entry];
         
         options.previousInsecting = isInsecting;
