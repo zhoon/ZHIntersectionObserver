@@ -28,6 +28,9 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
+    self.isReuseCell = YES;
+    
     [self initIntersectionObserver];
     [self updateNavigationItem];
 
@@ -38,14 +41,14 @@
 - (void)updateNavigationItem {
     NSMutableArray *items = [[NSMutableArray alloc] init];
     if (self.isFilter) {
-        [items addObject:[[UIBarButtonItem alloc] initWithTitle:@"不用曝光时长" style:UIBarButtonItemStylePlain target:self action:@selector(handleChangeFilter)]];
+        [items addObject:[[UIBarButtonItem alloc] initWithTitle:@"切到要求曝光时长" style:UIBarButtonItemStylePlain target:self action:@selector(handleChangeFilter)]];
     } else {
-        [items addObject:[[UIBarButtonItem alloc] initWithTitle:@"要求曝光0.6秒" style:UIBarButtonItemStylePlain target:self action:@selector(handleChangeFilter)]];
+        [items addObject:[[UIBarButtonItem alloc] initWithTitle:@"切到实时曝光" style:UIBarButtonItemStylePlain target:self action:@selector(handleChangeFilter)]];
     }
     if (self.isReuseCell) {
-        [items addObject:[[UIBarButtonItem alloc] initWithTitle:@"Cell复用" style:UIBarButtonItemStylePlain target:self action:@selector(handleChangeReuseCell)]];
+        [items addObject:[[UIBarButtonItem alloc] initWithTitle:@"切到Cell不复用" style:UIBarButtonItemStylePlain target:self action:@selector(handleChangeReuseCell)]];
     } else {
-        [items addObject:[[UIBarButtonItem alloc] initWithTitle:@"Cell不复用" style:UIBarButtonItemStylePlain target:self action:@selector(handleChangeReuseCell)]];
+        [items addObject:[[UIBarButtonItem alloc] initWithTitle:@"切到Cell复用" style:UIBarButtonItemStylePlain target:self action:@selector(handleChangeReuseCell)]];
     }
     self.navigationItem.rightBarButtonItems = items;
 }
@@ -71,6 +74,7 @@
         for (NSInteger i = 0; i < entries.count; i++) {
             IntersectionObserverEntry *entry = entries[i];
             ZHExample2UITableViewCell *cell = (ZHExample2UITableViewCell *)entry.target.superview;
+            NSLog(@"zhoon entry, isInsecting = %@ index = %@", @(entry.isInsecting), entry.data[@"row"]);
             if (cell) {
                 cell.backgroundColor = entry.isInsecting ? [[UIColor orangeColor] colorWithAlphaComponent:0.5] : [UIColor whiteColor];
             }
@@ -112,7 +116,7 @@
         IntersectionObserverTargetOptions *targetOptions = [IntersectionObserverTargetOptions initOptionsWithScope:@"Example2" dataKey:[NSString stringWithFormat:@"%@", @(indexPath.row)] data:@{@"row": @(indexPath.row)} targetView:cell.contentView];
         cell.contentView.intersectionObserverTargetOptions = targetOptions;
     } else {
-        [cell.contentView.intersectionObserverTargetOptions updateDataKey:[NSString stringWithFormat:@"%@", @(indexPath.row)] data:@(indexPath.row)];
+        [cell.contentView.intersectionObserverTargetOptions updateDataKey:[NSString stringWithFormat:@"%@", @(indexPath.row)] data:@{@"row": @(indexPath.row)}];
     }
     
     return cell;
