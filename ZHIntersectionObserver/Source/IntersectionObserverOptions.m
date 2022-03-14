@@ -186,9 +186,10 @@
 }
 
 - (void)updateDataKey:(NSString *)dataKey data:(id)data {
+    /* 复用场景的情况下可能会复用跟之前同一个 cell，导致这里被返回了
     if ([dataKey isEqualToString:self.dataKey]) {
         return;
-    }
+    } */
     self.dataKey = dataKey;
     self.data = data;
     // resetTargetOptions 改为其他地方调用
