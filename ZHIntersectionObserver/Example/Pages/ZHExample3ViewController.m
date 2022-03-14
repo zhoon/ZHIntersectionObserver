@@ -43,7 +43,7 @@
     self.cardLabel.text = text;
     [self.cardLabel sizeToFit];
     if (self.intersectionObserverTargetOptions) {
-        [self.intersectionObserverTargetOptions updateDataKey:text data:@{@"text": [NSString stringWithFormat:@"%@", text]}];
+        [self.intersectionObserverTargetOptions updateDataKey:text data:@{@"text": text}];
     } else {
         IntersectionObserverTargetOptions *targetOptions = [IntersectionObserverTargetOptions initOptionsWithScope:@"Example3" dataKey:text data:@{@"text": text} targetView:self];
         self.intersectionObserverTargetOptions = targetOptions;

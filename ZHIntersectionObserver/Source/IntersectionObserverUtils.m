@@ -99,6 +99,7 @@
                                                           time:floor([NSDate date].timeIntervalSince1970 * 1000)];
             options.previousFixedInsecting = NO;
             [reusedEntries addObject:entry];
+            [IntersectionObserverUtils resetTargetOptions:options];
         }
         
         if (needReport) {

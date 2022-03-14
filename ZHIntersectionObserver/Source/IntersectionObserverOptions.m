@@ -191,7 +191,7 @@
     }
     self.dataKey = dataKey;
     self.data = data;
-    [IntersectionObserverUtils resetTargetOptions:self];
+    // [IntersectionObserverUtils resetTargetOptions:self];
     if (self.targetView) {
         if (self.scope && self.scope.length > 0) {
             NSLog(@"updateDataKey: targetView = %p, dataKey = %@, data = %@", self.targetView, self.dataKey, self.data);
