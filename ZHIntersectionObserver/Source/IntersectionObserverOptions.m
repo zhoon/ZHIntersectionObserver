@@ -191,6 +191,7 @@
     }
     self.dataKey = dataKey;
     self.data = data;
+    // resetTargetOptions 改为其他地方调用
     // [IntersectionObserverUtils resetTargetOptions:self];
     if (self.targetView) {
         if (self.scope && self.scope.length > 0) {
