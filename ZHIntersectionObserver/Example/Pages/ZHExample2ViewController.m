@@ -54,17 +54,16 @@
 }
 
 - (void)handleChangeReuseCell {
-    self.isReuseCell = !self.isReuseCell;
+    // self.isReuseCell = !self.isReuseCell;
     [self.tableView reloadData];
     [self updateNavigationItem];
 }
 
 - (void)handleChangeFilter {
     self.isFilter = !self.isFilter;
-    /*
     if (self.tableView.intersectionObserverContainerOptions) {
         [self.tableView.intersectionObserverContainerOptions updateIntersectionDuration:self.isFilter ? 0 : 600];
-    } */
+    }
     [self.tableView reloadData];
     [self updateNavigationItem];
 }
@@ -109,7 +108,7 @@
     cell.textLabel.numberOfLines = 3;
     cell.textLabel.font = [UIFont systemFontOfSize:15];
     
-    cell.textLabel.text = cell.textLabel.text && cell.textLabel.text.length > 0 ? [NSString stringWithFormat:@"复用堆栈 %@ - %@ (黄色代表曝光)", @(indexPath.row), [cell.textLabel.text substringWithRange:NSMakeRange(5, cell.textLabel.text.length - 15)]] : [NSString stringWithFormat:@"复用堆栈 %@ (黄色代表曝光)", @(indexPath.row)];
+    cell.textLabel.text = cell.textLabel.text && cell.textLabel.text.length > 0 ? [NSString stringWithFormat:@"复用堆栈 %@ - %@ (黄色代表曝光)", @(indexPath.row), [cell.textLabel.text substringWithRange:NSMakeRange(5, cell.textLabel.text.length - 13)]] : [NSString stringWithFormat:@"复用堆栈 %@ (黄色代表曝光)", @(indexPath.row)];
     cell.detailTextLabel.text = [NSString stringWithFormat:@"cell: %p, contentView: %p", cell, cell.contentView];
     
     // TODO：cell 在复用的瞬间会被设置为 hidden 导致判断不准确，先用 cell.contentView

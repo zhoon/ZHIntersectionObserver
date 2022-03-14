@@ -81,13 +81,10 @@
         CGRect intersectionRect = [[calcResult objectForKey:@"intersectionRect"] CGRectValue];
         if (ratio < 0) continue;
         
-        BOOL needReport = [self needReportWithRatio:ratio containerOptions:containerOptions targetOptions:options];
-        BOOL isInsecting = [self isInsectingWithRatio:ratio containerOptions:containerOptions targetOptions:options];
-        BOOL delayReportEntry = delayReport && isInsecting; // 曝光的 entry 才有 delay 的资格
-        
         // 复用 view，立刻发送复用前数据的 isInsecting = NO 事件
         // previousFixedInsecting 是为了一个 view 被复用很多次都没有曝光的情况下，会一直发送 isInsecting = NO 的事件，例如 delayReport 并且快速滚动的时候
-        if (options.dataKey && options.dataKey.length > 0 && ![options.dataKey isEqualToString:options.previousDataKey] && options.previousFixedInsecting) {
+        if (options.dataKey && options.dataKey.length > 0 && ![options.dataKey isEqualToString:options.previousDataKey] &&
+            options.previousInsecting && options.previousFixedInsecting) {
             IntersectionObserverEntry *entry =
                 [IntersectionObserverEntry initEntryWithTarget:curTargetView
                                                           data:options.previousData
@@ -102,6 +99,10 @@
             [IntersectionObserverUtils resetTargetOptions:options];
         }
         
+        BOOL needReport = [self needReportWithRatio:ratio containerOptions:containerOptions targetOptions:options];
+        BOOL isInsecting = [self isInsectingWithRatio:ratio containerOptions:containerOptions targetOptions:options];
+        BOOL delayReportEntry = delayReport && isInsecting; // 曝光的 entry 才有 delay 的资格
+        
         if (needReport) {
             IntersectionObserverEntry *entry =
                 [IntersectionObserverEntry initEntryWithTarget:curTargetView
@@ -113,11 +114,12 @@
                                                     rootBounds:containerView.bounds
                                                           time:floor([NSDate date].timeIntervalSince1970 * 1000)];
             entry.dataKey = options.dataKey;
-            if (delayReportEntry) {
+            if (isInsecting) {
                 [entries addObject:entry];
             } else {
                 [hideEntries addObject:entry];
-                // 只有当前曝光的并且需要 delay 的 entry 才需要延迟设置 options.previousXXX，
+            }
+            if (!isInsecting || !delayReport) {
                 options.previousInsecting = isInsecting;
                 options.previousFixedInsecting = isInsecting;
                 options.previousDataKey = options.dataKey;
@@ -278,16 +280,16 @@
            containerOptions:(IntersectionObserverContainerOptions *)containerOptions
               targetOptions:(IntersectionObserverTargetOptions *)targetOptions {
     
+    BOOL isInsecting = [self isInsectingWithRatio:ratio containerOptions:containerOptions targetOptions:targetOptions];
+    
     // 生命周期发生变化
     if (containerOptions.measureWhenAppStateChanged) {
         UIApplicationState prevApplicationState = [IntersectionObserverManager shareInstance].previousApplicationState;
-        if (prevApplicationState != UIApplicationStateActive &&
-            UIApplication.sharedApplication.applicationState == UIApplicationStateActive) {
-            return targetOptions.previousInsecting != [self isInsectingWithRatio:ratio containerOptions:containerOptions targetOptions:targetOptions];
+        if (prevApplicationState != UIApplicationStateActive && UIApplication.sharedApplication.applicationState == UIApplicationStateActive) {
+            return isInsecting != targetOptions.previousInsecting;
         }
-        if (prevApplicationState != UIApplicationStateBackground &&
-            UIApplication.sharedApplication.applicationState == UIApplicationStateBackground) {
-            return targetOptions.previousInsecting != [self isInsectingWithRatio:ratio containerOptions:containerOptions targetOptions:targetOptions];
+        if (prevApplicationState != UIApplicationStateBackground && UIApplication.sharedApplication.applicationState == UIApplicationStateBackground) {
+            return isInsecting != targetOptions.previousInsecting;
         }
     }
     
@@ -296,14 +298,14 @@
         BOOL targetViewVisible = [self isTargetViewVisible:targetOptions.targetView inContainerView:containerOptions.containerView];
         BOOL containerViewVisible = [self isContainerViewVisible:containerOptions.containerView];
         if (targetViewVisible != targetOptions.previousVisible || containerViewVisible != containerOptions.previousVisible) {
-            return targetOptions.previousInsecting != [self isInsectingWithRatio:ratio containerOptions:containerOptions targetOptions:targetOptions];
+            return isInsecting != targetOptions.previousInsecting;
         }
     }
     
     // 数据发生变化
-    if (targetOptions.dataKey && targetOptions.dataKey.length > 0 && targetOptions.previousDataKey && targetOptions.previousDataKey.length > 0 &&
-        ![targetOptions.dataKey isEqualToString:targetOptions.previousDataKey]) {
-        return YES;
+    if (targetOptions.dataKey && targetOptions.dataKey.length > 0 && targetOptions.previousDataKey &&
+        targetOptions.previousDataKey.length > 0 && ![targetOptions.dataKey isEqualToString:targetOptions.previousDataKey]) {
+        return isInsecting != targetOptions.previousInsecting;
     }
     
     // 前后 ratio 变化
