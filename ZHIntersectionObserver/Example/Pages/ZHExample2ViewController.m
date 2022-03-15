@@ -29,6 +29,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
+    self.isFilter = YES;
     self.isReuseCell = YES;
     
     [self initIntersectionObserver];
@@ -54,7 +55,7 @@
 }
 
 - (void)handleChangeReuseCell {
-    // self.isReuseCell = !self.isReuseCell;
+    self.isReuseCell = !self.isReuseCell;
     [self.tableView reloadData];
     [self updateNavigationItem];
 }
@@ -69,14 +70,14 @@
 }
 
 - (void)initIntersectionObserver {
-    IntersectionObserverContainerOptions *containerOptions = [IntersectionObserverContainerOptions initOptionsWithScope:@"Example2" rootMargin:UIEdgeInsetsMake(CGRectGetMaxY(self.navigationController.navigationBar.frame), 0, 0, 0) thresholds:@[@1] containerView:self.tableView intersectionDuration:600 callback:^(NSString * _Nonnull scope, NSArray<IntersectionObserverEntry *> * _Nonnull entries) {
+    IntersectionObserverContainerOptions *containerOptions = [IntersectionObserverContainerOptions initOptionsWithScope:@"Example2" rootMargin:UIEdgeInsetsMake(CGRectGetMaxY(self.navigationController.navigationBar.frame), 0, 0, 0) thresholds:@[@1] containerView:self.tableView intersectionDuration:self.isFilter ? 0 : 600 callback:^(NSString * _Nonnull scope, NSArray<IntersectionObserverEntry *> * _Nonnull entries) {
         NSLog(@"Example2: entries = %@", entries);
         for (NSInteger i = 0; i < entries.count; i++) {
             IntersectionObserverEntry *entry = entries[i];
-            ZHExample2UITableViewCell *cell = (ZHExample2UITableViewCell *)entry.target.superview;
+            ZHExample2UITableViewCell *cell = (ZHExample2UITableViewCell *)entry.target;
             NSLog(@"zhoon entry, isInsecting = %@ index = %@", @(entry.isInsecting), entry.data[@"row"]);
             if (cell) {
-                cell.backgroundColor = entry.isInsecting ? [[UIColor orangeColor] colorWithAlphaComponent:0.5] : [UIColor whiteColor];
+                cell.backgroundColor = entry.isInsecting ? [[UIColor orangeColor] colorWithAlphaComponent:0.2] : [UIColor whiteColor];
             }
         }
     }];
@@ -109,14 +110,13 @@
     cell.textLabel.font = [UIFont systemFontOfSize:15];
     
     cell.textLabel.text = cell.textLabel.text && cell.textLabel.text.length > 0 ? [NSString stringWithFormat:@"复用堆栈 %@ - %@ (黄色代表曝光)", @(indexPath.row), [cell.textLabel.text substringWithRange:NSMakeRange(5, cell.textLabel.text.length - 13)]] : [NSString stringWithFormat:@"复用堆栈 %@ (黄色代表曝光)", @(indexPath.row)];
-    cell.detailTextLabel.text = [NSString stringWithFormat:@"cell: %p, contentView: %p", cell, cell.contentView];
+    cell.detailTextLabel.text = [NSString stringWithFormat:@"cell: %p", cell];
     
-    // TODO：cell 在复用的瞬间会被设置为 hidden 导致判断不准确，先用 cell.contentView
-    if (!cell.contentView.intersectionObserverTargetOptions) {
-        IntersectionObserverTargetOptions *targetOptions = [IntersectionObserverTargetOptions initOptionsWithScope:@"Example2" dataKey:[NSString stringWithFormat:@"%@", @(indexPath.row)] data:@{@"row": @(indexPath.row)} targetView:cell.contentView];
-        cell.contentView.intersectionObserverTargetOptions = targetOptions;
+    if (!cell.intersectionObserverTargetOptions) {
+        IntersectionObserverTargetOptions *targetOptions = [IntersectionObserverTargetOptions initOptionsWithScope:@"Example2" dataKey:[NSString stringWithFormat:@"%@", @(indexPath.row)] data:@{@"row": @(indexPath.row)} targetView:cell];
+        cell.intersectionObserverTargetOptions = targetOptions;
     } else {
-        [cell.contentView.intersectionObserverTargetOptions updateDataKey:[NSString stringWithFormat:@"%@", @(indexPath.row)] data:@{@"row": @(indexPath.row)}];
+        [cell.intersectionObserverTargetOptions updateDataKey:[NSString stringWithFormat:@"%@", @(indexPath.row)] data:@{@"row": @(indexPath.row)}];
     }
     
     return cell;

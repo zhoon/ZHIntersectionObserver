@@ -88,6 +88,7 @@
             // previousFixedInsecting 是为了一个 view 被复用很多次都没有曝光的情况下，会一直发送 isInsecting = NO 的事件，例如 delayReport 并且快速滚动的时候
             if (options.dataKey && options.dataKey.length > 0 && ![options.dataKey isEqualToString:options.previousDataKey] &&
                 options.previousInsecting && options.previousFixedInsecting) {
+                // TODO zhoon - 还有个问题，如果被复用的 view 当前也是可视的，那么这里其实没有必要发送 hide 事件，而且发送之后重置了 options 导致 show 事件又重发了一次
                 IntersectionObserverEntry *entry =
                     [IntersectionObserverEntry initEntryWithTarget:curTargetView
                                                               data:options.previousData
@@ -97,13 +98,14 @@
                                                        isInsecting:NO
                                                         rootBounds:containerView.bounds
                                                               time:floor([NSDate date].timeIntervalSince1970 * 1000)];
+                entry.dataKey = options.previousDataKey;
                 options.previousFixedInsecting = NO;
                 [reusedEntries addObject:entry];
                 [IntersectionObserverUtils resetTargetOptions:options];
             }
             
-            BOOL needReport = [self needReportWithRatio:ratio containerOptions:containerOptions targetOptions:options];
             BOOL isInsecting = [self isInsectingWithRatio:ratio containerOptions:containerOptions targetOptions:options];
+            BOOL needReport = [self needReportWithRatio:ratio containerOptions:containerOptions targetOptions:options];
             BOOL delayReportEntry = delayReport && isInsecting; // 曝光的 entry 才有 delay 的资格
             
             if (needReport) {
@@ -145,24 +147,20 @@
             }
         }
         
-        // 实时回调复用和即将隐藏的 entry
-        if (reusedEntries.count > 0 || hideEntries.count > 0) {
-            if (containerOptions.callback) {
-                [hideEntries addObjectsFromArray:reusedEntries];
-                containerOptions.callback(containerOptions.scope, hideEntries.copy);
-            } else {
-                NSAssert(NO, @"no callback");
-            }
+        // 隐藏的马上触发事件
+        if (hideEntries.count > 0) {
+            containerOptions.callback(containerOptions.scope, hideEntries.copy);
         }
         
-        if (entries.count > 0) {
+        if (entries.count > 0 || reusedEntries.count > 0) {
             if (delayReport) {
                 dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(containerOptions.intersectionDuration / 1000.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                    [self delayMeasureWithObserver:observer entries:entries.copy];
+                    [self delayMeasureWithObserver:observer entries:entries.copy hideEntries:reusedEntries.copy];
                 });
             } else {
                 if (containerOptions.callback) {
-                    containerOptions.callback(containerOptions.scope, entries.copy);
+                    NSArray *filterEntries = [self filterHideEntries:reusedEntries.copy inShowEntries:entries.copy];
+                    containerOptions.callback(containerOptions.scope, filterEntries);
                 } else {
                     NSAssert(NO, @"no callback");
                 }
@@ -172,7 +170,35 @@
     });
 }
 
-+ (void)delayMeasureWithObserver:(IntersectionObserver *)observer entries:(NSArray<IntersectionObserverEntry *> *)entries {
++ (NSArray <IntersectionObserverEntry *> *)filterHideEntries:(NSArray <IntersectionObserverEntry *> *)hideEntries
+                                               inShowEntries:(NSArray <IntersectionObserverEntry *> *)showEntries {
+    NSMutableArray *filterEntries = [[NSMutableArray alloc] init];
+    NSMutableArray *dataKeys = [[NSMutableArray alloc] init];
+    for (NSInteger i = 0; i < showEntries.count; i++) {
+        IntersectionObserverEntry *entry = showEntries[i];
+        if (entry.dataKey && entry.dataKey.length > 0) {
+            [dataKeys addObject:entry.dataKey];
+        }
+    }
+    for (NSInteger i = 0; i < hideEntries.count; i++) {
+        IntersectionObserverEntry *entry = hideEntries[i];
+        if (!entry.dataKey || entry.dataKey.length <= 0) {
+            [filterEntries addObject:entry];
+            continue;
+        }
+        if (entry.dataKey && entry.dataKey.length > 0 && ![dataKeys containsObject:entry.dataKey]) {
+            [filterEntries addObject:entry];
+            continue;
+        }
+    }
+    // showEntries 放在最后
+    [filterEntries addObjectsFromArray:showEntries];
+    return filterEntries.copy;
+}
+
++ (void)delayMeasureWithObserver:(IntersectionObserver *)observer
+                         entries:(NSArray <IntersectionObserverEntry *> *)entries
+                     hideEntries:(NSArray <IntersectionObserverEntry *> *)hideEntries {
     
     // 简单判断下当前 options 和 entries
     IntersectionObserverContainerOptions *containerOptions = observer.containerOptions;
@@ -220,6 +246,7 @@
                                                isInsecting:isInsecting
                                                 rootBounds:containerView.bounds
                                                       time:floor([NSDate date].timeIntervalSince1970 * 1000)];
+        entry.dataKey = options.dataKey;
         [filterEntries addObject:entry];
         
         options.previousInsecting = isInsecting;
@@ -240,7 +267,7 @@
     
     if (filterEntries.count > 0) {
         if (containerOptions.callback) {
-            containerOptions.callback(containerOptions.scope, filterEntries.copy);
+            containerOptions.callback(containerOptions.scope, [self filterHideEntries:hideEntries inShowEntries:filterEntries]);
         } else {
             NSAssert(NO, @"no callback");
         }
