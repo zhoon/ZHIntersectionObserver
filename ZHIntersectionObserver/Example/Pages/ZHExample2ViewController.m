@@ -19,8 +19,8 @@
 
 @interface ZHExample2ViewController ()
 
-@property(nonatomic, assign) BOOL isFilter;
-@property(nonatomic, assign) BOOL isReuseCell;
+@property(nonatomic, assign) BOOL isDelay;
+@property(nonatomic, assign) BOOL isReuse;
 
 @end
 
@@ -29,8 +29,8 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    self.isFilter = YES;
-    self.isReuseCell = YES;
+    self.isDelay = YES;
+    self.isReuse = YES;
     
     [self initIntersectionObserver];
     [self updateNavigationItem];
@@ -41,36 +41,36 @@
 
 - (void)updateNavigationItem {
     NSMutableArray *items = [[NSMutableArray alloc] init];
-    if (self.isReuseCell) {
-        [items addObject:[[UIBarButtonItem alloc] initWithTitle:@"切到Cell不复用" style:UIBarButtonItemStylePlain target:self action:@selector(handleChangeReuseCell)]];
+    if (self.isReuse) {
+        [items addObject:[[UIBarButtonItem alloc] initWithTitle:@"切到Cell不复用" style:UIBarButtonItemStylePlain target:self action:@selector(handleChangeReuse)]];
     } else {
-        [items addObject:[[UIBarButtonItem alloc] initWithTitle:@"切到Cell复用" style:UIBarButtonItemStylePlain target:self action:@selector(handleChangeReuseCell)]];
+        [items addObject:[[UIBarButtonItem alloc] initWithTitle:@"切到Cell复用" style:UIBarButtonItemStylePlain target:self action:@selector(handleChangeReuse)]];
     }
-    if (self.isFilter) {
-        [items addObject:[[UIBarButtonItem alloc] initWithTitle:@"切到要求曝光时长" style:UIBarButtonItemStylePlain target:self action:@selector(handleChangeFilter)]];
+    if (self.isDelay) {
+        [items addObject:[[UIBarButtonItem alloc] initWithTitle:@"切到要求曝光时长" style:UIBarButtonItemStylePlain target:self action:@selector(handleChangeDelay)]];
     } else {
-        [items addObject:[[UIBarButtonItem alloc] initWithTitle:@"切到实时曝光" style:UIBarButtonItemStylePlain target:self action:@selector(handleChangeFilter)]];
+        [items addObject:[[UIBarButtonItem alloc] initWithTitle:@"切到实时曝光" style:UIBarButtonItemStylePlain target:self action:@selector(handleChangeDelay)]];
     }
     self.navigationItem.rightBarButtonItems = items;
 }
 
-- (void)handleChangeReuseCell {
-    self.isReuseCell = !self.isReuseCell;
+- (void)handleChangeReuse {
+    self.isReuse = !self.isReuse;
     [self.tableView reloadData];
     [self updateNavigationItem];
 }
 
-- (void)handleChangeFilter {
-    self.isFilter = !self.isFilter;
+- (void)handleChangeDelay {
+    self.isDelay = !self.isDelay;
     if (self.tableView.intersectionObserverContainerOptions) {
-        [self.tableView.intersectionObserverContainerOptions updateIntersectionDuration:self.isFilter ? 0 : 600];
+        [self.tableView.intersectionObserverContainerOptions updateIntersectionDuration:self.isDelay ? 600 : 0];
     }
     [self.tableView reloadData];
     [self updateNavigationItem];
 }
 
 - (void)initIntersectionObserver {
-    IntersectionObserverContainerOptions *containerOptions = [IntersectionObserverContainerOptions initOptionsWithScope:@"Example2" rootMargin:UIEdgeInsetsMake(CGRectGetMaxY(self.navigationController.navigationBar.frame), 0, 0, 0) thresholds:@[@1] containerView:self.tableView intersectionDuration:self.isFilter ? 0 : 600 callback:^(NSString * _Nonnull scope, NSArray<IntersectionObserverEntry *> * _Nonnull entries) {
+    IntersectionObserverContainerOptions *containerOptions = [IntersectionObserverContainerOptions initOptionsWithScope:@"Example2" rootMargin:UIEdgeInsetsMake(CGRectGetMaxY(self.navigationController.navigationBar.frame), 0, 0, 0) thresholds:@[@1] containerView:self.tableView intersectionDuration:self.isDelay ? 600 : 0 callback:^(NSString * _Nonnull scope, NSArray<IntersectionObserverEntry *> * _Nonnull entries) {
         NSLog(@"Example2: entries = %@", entries);
         for (NSInteger i = 0; i < entries.count; i++) {
             IntersectionObserverEntry *entry = entries[i];
@@ -97,7 +97,7 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     
     ZHExample2UITableViewCell *cell = nil;
-    if (self.isReuseCell) {
+    if (self.isReuse) {
         cell = [tableView dequeueReusableCellWithIdentifier:@"cell"] ?: [[ZHExample2UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle reuseIdentifier:@"cell"];
     } else {
         NSString *uniqKey = [NSString stringWithFormat:@"%@%@", @(indexPath.row), @([NSDate date].timeIntervalSince1970 * 1000)];
