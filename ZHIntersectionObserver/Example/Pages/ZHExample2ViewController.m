@@ -122,4 +122,11 @@
     return cell;
 }
 
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    UIViewController *emptyVC = [[UIViewController alloc] init];
+    emptyVC.title = @"测试空界面";
+    emptyVC.view.backgroundColor = [UIColor whiteColor];
+    [self.navigationController pushViewController:emptyVC animated:YES];
+}
+
 @end
