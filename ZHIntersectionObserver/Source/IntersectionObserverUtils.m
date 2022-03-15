@@ -147,20 +147,22 @@
             }
         }
         
-        // 隐藏的马上触发事件
         if (hideEntries.count > 0) {
             containerOptions.callback(containerOptions.scope, hideEntries.copy);
         }
         
-        if (entries.count > 0 || reusedEntries.count > 0) {
+        if (reusedEntries.count > 0) {
+            containerOptions.callback(containerOptions.scope, reusedEntries.copy);
+        }
+        
+        if (entries.count > 0) {
             if (delayReport) {
                 dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(containerOptions.intersectionDuration / 1000.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                    [self delayMeasureWithObserver:observer entries:entries.copy hideEntries:reusedEntries.copy];
+                    [self delayMeasureWithObserver:observer entries:entries.copy];
                 });
             } else {
                 if (containerOptions.callback) {
-                    NSArray *filterEntries = [self filterHideEntries:reusedEntries.copy inShowEntries:entries.copy];
-                    containerOptions.callback(containerOptions.scope, filterEntries);
+                    containerOptions.callback(containerOptions.scope, entries.copy);
                 } else {
                     NSAssert(NO, @"no callback");
                 }
@@ -197,8 +199,7 @@
 }
 
 + (void)delayMeasureWithObserver:(IntersectionObserver *)observer
-                         entries:(NSArray <IntersectionObserverEntry *> *)entries
-                     hideEntries:(NSArray <IntersectionObserverEntry *> *)hideEntries {
+                         entries:(NSArray <IntersectionObserverEntry *> *)entries {
     
     // 简单判断下当前 options 和 entries
     IntersectionObserverContainerOptions *containerOptions = observer.containerOptions;
@@ -267,7 +268,7 @@
     
     if (filterEntries.count > 0) {
         if (containerOptions.callback) {
-            containerOptions.callback(containerOptions.scope, [self filterHideEntries:hideEntries inShowEntries:filterEntries]);
+            containerOptions.callback(containerOptions.scope, filterEntries.copy);
         } else {
             NSAssert(NO, @"no callback");
         }
