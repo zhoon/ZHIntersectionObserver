@@ -37,6 +37,9 @@ typedef void (^IntersectionObserverCallback)(NSString *scope, NSArray<Intersecti
 /// 触发事件时的时间戳，可用来计算 target 在屏幕内停留时间，单位 ms
 @property(nonatomic, assign) NSTimeInterval time;
 
+/// 透传的 dataKey
+@property(nonatomic, copy) NSString *dataKey;
+
 /// 透传的 data
 @property(nonatomic, copy) NSDictionary *data;
 
@@ -45,6 +48,7 @@ typedef void (^IntersectionObserverCallback)(NSString *scope, NSArray<Intersecti
 
 /// 初始化方法
 + (instancetype)initEntryWithTarget:(UIView *)target
+                            dataKey:(NSString *)dataKey
                                data:(NSDictionary *)data
                  boundingClientRect:(CGRect)boundingClientRect
                   intersectionRatio:(CGFloat)intersectionRatio

@@ -10,6 +10,7 @@
 @implementation IntersectionObserverEntry
 
 + (instancetype)initEntryWithTarget:(UIView *)target
+                            dataKey:(NSString *)dataKey
                                data:(NSDictionary *)data
                  boundingClientRect:(CGRect)boundingClientRect
                   intersectionRatio:(CGFloat)intersectionRatio
@@ -25,12 +26,13 @@
     entry.rootBounds = rootBounds;
     entry.target = target;
     entry.time = time;
+    entry.dataKey = dataKey;
     entry.data = data;
     return entry;
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"<%@, %p>: boundingClientRect = %@, intersectionRatio = %@, intersectionRect = %@, isInsecting = %@, rootBounds = %@, target = %@, time = %@, data = %@", self.class, self,  @(_boundingClientRect), @(_intersectionRatio), @(_intersectionRect), @(_isInsecting), @(_rootBounds), _target, @(_time), _data];
+    return [NSString stringWithFormat:@"<%@, %p>: boundingClientRect = %@, intersectionRatio = %@, intersectionRect = %@, isInsecting = %@, rootBounds = %@, target = %@, time = %@, dataKey = %@ data = %@", self.class, self,  @(_boundingClientRect), @(_intersectionRatio), @(_intersectionRect), @(_isInsecting), @(_rootBounds), _target, @(_time), _dataKey, _data];
 }
 
 @end

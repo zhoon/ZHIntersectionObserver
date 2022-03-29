@@ -91,6 +91,7 @@
                 // TODO zhoon - 还有个问题，如果被复用的 view 当前也是可视的，那么这里其实没有必要发送 hide 事件，而且发送之后重置了 options 导致 show 事件又重发了一次
                 IntersectionObserverEntry *entry =
                     [IntersectionObserverEntry initEntryWithTarget:curTargetView
+                                                           dataKey:options.previousDataKey
                                                               data:options.previousData
                                                 boundingClientRect:viewportTargetRect
                                                  intersectionRatio:ratio
@@ -98,7 +99,6 @@
                                                        isInsecting:NO
                                                         rootBounds:containerView.bounds
                                                               time:floor([NSDate date].timeIntervalSince1970 * 1000)];
-                entry.dataKey = options.previousDataKey;
                 options.previousFixedInsecting = NO;
                 [reusedEntries addObject:entry];
                 [IntersectionObserverUtils resetTargetOptions:options];
@@ -111,6 +111,7 @@
             if (needReport) {
                 IntersectionObserverEntry *entry =
                     [IntersectionObserverEntry initEntryWithTarget:curTargetView
+                                                           dataKey:options.dataKey
                                                               data:options.data
                                                 boundingClientRect:viewportTargetRect
                                                  intersectionRatio:ratio
@@ -118,7 +119,6 @@
                                                        isInsecting:isInsecting
                                                         rootBounds:containerView.bounds
                                                               time:floor([NSDate date].timeIntervalSince1970 * 1000)];
-                entry.dataKey = options.dataKey;
                 if (isInsecting) {
                     [entries addObject:entry];
                 } else {
@@ -240,6 +240,7 @@
         
         IntersectionObserverEntry *entry =
             [IntersectionObserverEntry initEntryWithTarget:targetView
+                                                   dataKey:options.dataKey
                                                       data:oldEntry.data
                                         boundingClientRect:viewportTargetRect
                                          intersectionRatio:ratio
@@ -247,7 +248,6 @@
                                                isInsecting:isInsecting
                                                 rootBounds:containerView.bounds
                                                       time:floor([NSDate date].timeIntervalSince1970 * 1000)];
-        entry.dataKey = options.dataKey;
         [filterEntries addObject:entry];
         
         options.previousInsecting = isInsecting;
@@ -459,7 +459,6 @@ static char kAssociatedObjectKey_UtilsPreviousInsecting;
 static char kAssociatedObjectKey_UtilsPreviousFixedInsecting;
 static char kAssociatedObjectKey_UtilsPreviousVisible;
 static char kAssociatedObjectKey_UtilsContainerPreviousVisible;
-static char kAssociatedObjectKey_UtilsDataKey;
 static char kAssociatedObjectKey_UtilsPreviousDataKey;
 static char kAssociatedObjectKey_UtilsPreviousData;
 
@@ -524,19 +523,6 @@ static char kAssociatedObjectKey_UtilsPreviousData;
 
 - (NSDictionary *)previousData {
     return objc_getAssociatedObject(self, &kAssociatedObjectKey_UtilsPreviousData);
-}
-
-@end
-
-
-@implementation IntersectionObserverEntry (Utils)
-
-- (void)setDataKey:(NSString *)dataKey {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_UtilsDataKey, dataKey, OBJC_ASSOCIATION_COPY_NONATOMIC);
-}
-
-- (NSString *)dataKey {
-    return objc_getAssociatedObject(self, &kAssociatedObjectKey_UtilsDataKey);
 }
 
 @end
