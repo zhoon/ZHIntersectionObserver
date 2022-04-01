@@ -10,5 +10,6 @@
 #import "IntersectionObserverOptions.h"
 #import "IntersectionObserver.h"
 #import "IntersectionObserverManager.h"
+#import "IntersectionObserverReuseManager.h"
 #import "UIView+IntersectionObserver.h"
 #import "UIScrollView+IntersectionObserver.h"

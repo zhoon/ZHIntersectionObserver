@@ -8,6 +8,7 @@
 #import "IntersectionObserverOptions.h"
 #import "IntersectionObserverManager.h"
 #import "IntersectionObserverUtils.h"
+#import "IntersectionObserverReuseManager.h"
 
 @interface IntersectionObserverContainerOptions ()
 
@@ -209,6 +210,9 @@
 }
 
 - (void)dealloc {
+    if (_dataKey && _dataKey.length > 0 && _scope && _scope.length > 0) {
+        [[IntersectionObserverReuseManager shareInstance] removeVisibleDataKey:_dataKey fromScope:_scope];
+    }
     NSLog(@"target dealloc");
 }
 
