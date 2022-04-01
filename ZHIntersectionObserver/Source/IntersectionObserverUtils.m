@@ -31,9 +31,15 @@
 @end
 
 
-@interface IntersectionObserverEntry (Utils)
+@interface IntersectionObserverReuseManager : NSObject
 
-@property(nonatomic, copy) NSString *dataKey;
+@property(nonatomic, strong, readonly) NSMutableDictionary<NSString *, NSSet *> *visibleDataKeys;
+
++ (instancetype)shareInstance;
+
+- (BOOL)isDataKeyVisible:(NSString *)dataKey inScope:(NSString *)scope;
+- (void)addVisibleDataKey:(NSString *)dataKey toScope:(NSString *)scope;
+- (void)removeVisibleDataKey:(NSString *)dataKey fromScope:(NSString *)scope;
 
 @end
 
@@ -46,7 +52,7 @@
 
 + (void)measureWithObserver:(IntersectionObserver *)observer forTargetView:(UIView * __nullable)targetView {
     // updateDataKey 调用后马上开始重新计算，但是这个时候如果是复用的 view 例如 cell，如果复用前和复用后位置不一样，那么在计算 isInsecting 的时候可能会错误
-    // 假设被复用的 view 在复用前是再屏幕外，那么复用的时候计算出来的 isInsecting 就是在屏幕外的，所以需要等待 view 重新布局之后再计算，通过 dispatch_async 使得计算再下个 runloop 再触发
+    // 假设被复用的 view 在复用前是在屏幕外，那么复用的时候计算出来的 isInsecting 就是在屏幕外的，所以需要等待 view 重新布局之后再计算，通过 dispatch_async 使得计算再下个 runloop 再触发
     dispatch_async(dispatch_get_main_queue(), ^{
         
         // 判断是否有 containerOptions
@@ -88,7 +94,6 @@
             // previousFixedInsecting 是为了一个 view 被复用很多次都没有曝光的情况下，会一直发送 isInsecting = NO 的事件，例如 delayReport 并且快速滚动的时候
             if (options.dataKey && options.dataKey.length > 0 && ![options.dataKey isEqualToString:options.previousDataKey] &&
                 options.previousInsecting && options.previousFixedInsecting) {
-                // TODO zhoon - 还有个问题，如果被复用的 view 当前也是可视的，那么这里其实没有必要发送 hide 事件，而且发送之后重置了 options 导致 show 事件又重发了一次
                 IntersectionObserverEntry *entry =
                     [IntersectionObserverEntry initEntryWithTarget:curTargetView
                                                            dataKey:options.previousDataKey
@@ -101,14 +106,13 @@
                                                               time:floor([NSDate date].timeIntervalSince1970 * 1000)];
                 options.previousFixedInsecting = NO;
                 [reusedEntries addObject:entry];
-                [IntersectionObserverUtils resetTargetOptions:options];
             }
             
             BOOL isInsecting = [self isInsectingWithRatio:ratio containerOptions:containerOptions targetOptions:options];
-            BOOL needReport = [self needReportWithRatio:ratio containerOptions:containerOptions targetOptions:options];
+            BOOL canReport = [self canReportWithRatio:ratio containerOptions:containerOptions targetOptions:options];
             BOOL delayReportEntry = delayReport && isInsecting; // 曝光的 entry 才有 delay 的资格
             
-            if (needReport) {
+            if (canReport) {
                 IntersectionObserverEntry *entry =
                     [IntersectionObserverEntry initEntryWithTarget:curTargetView
                                                            dataKey:options.dataKey
@@ -135,7 +139,7 @@
                 }
             }
             
-            // 非 needReport 也要更新
+            // 非 canReport 也要更新
             if (!delayReportEntry) {
                 options.previousRatio = ratio;
             }
@@ -148,12 +152,22 @@
         }
         
         if (hideEntries.count > 0) {
-            containerOptions.callback(containerOptions.scope, hideEntries.copy);
+            for (NSInteger i = 0; i < hideEntries.count; i++) {
+                IntersectionObserverEntry *entry = hideEntries[i];
+                if (entry.dataKey && entry.dataKey.length > 0) {
+                    [[IntersectionObserverReuseManager shareInstance] removeVisibleDataKey:entry.dataKey fromScope:containerOptions.scope];
+                }
+            }
+            if (containerOptions.callback) {
+                containerOptions.callback(containerOptions.scope, hideEntries.copy);
+            }
         }
         
+        /*
         if (reusedEntries.count > 0) {
             containerOptions.callback(containerOptions.scope, reusedEntries.copy);
         }
+        */
         
         if (entries.count > 0) {
             if (delayReport) {
@@ -161,6 +175,12 @@
                     [self delayMeasureWithObserver:observer entries:entries.copy];
                 });
             } else {
+                for (NSInteger i = 0; i < entries.count; i++) {
+                    IntersectionObserverEntry *entry = entries[i];
+                    if (entry.dataKey && entry.dataKey.length > 0) {
+                        [[IntersectionObserverReuseManager shareInstance] addVisibleDataKey:entry.dataKey toScope:containerOptions.scope];
+                    }
+                }
                 if (containerOptions.callback) {
                     containerOptions.callback(containerOptions.scope, entries.copy);
                 } else {
@@ -234,9 +254,9 @@
         if (ratio < 0) continue;
         
         BOOL isInsecting = [self isInsectingWithRatio:ratio containerOptions:containerOptions targetOptions:options];
-        BOOL isInsectingChanged = isInsecting == oldEntry.isInsecting && isInsecting != options.previousInsecting;
-        BOOL needReport = [oldEntry.dataKey isEqualToString:options.dataKey] && isInsectingChanged;
-        if (!needReport) continue;
+        // BOOL isInsectingChanged = isInsecting == oldEntry.isInsecting && isInsecting != options.previousInsecting;
+        BOOL canReport = [oldEntry.dataKey isEqualToString:options.dataKey] && isInsecting == oldEntry.isInsecting && ![[IntersectionObserverReuseManager shareInstance] isDataKeyVisible:options.dataKey inScope:containerOptions.scope];
+        if (!canReport) continue;
         
         IntersectionObserverEntry *entry =
             [IntersectionObserverEntry initEntryWithTarget:targetView
@@ -267,6 +287,12 @@
     }
     
     if (filterEntries.count > 0) {
+        for (NSInteger i = 0; i < filterEntries.count; i++) {
+            IntersectionObserverEntry *entry = filterEntries[i];
+            if (entry.dataKey && entry.dataKey.length > 0) {
+                [[IntersectionObserverReuseManager shareInstance] addVisibleDataKey:entry.dataKey toScope:containerOptions.scope];
+            }
+        }
         if (containerOptions.callback) {
             containerOptions.callback(containerOptions.scope, filterEntries.copy);
         } else {
@@ -309,9 +335,9 @@
     return @{@"ratio": @(ratio), @"viewportTargetRect": @(viewportTargetRect), @"intersectionRect": @(intersectionRect)};
 }
 
-+ (BOOL)needReportWithRatio:(CGFloat)ratio
-           containerOptions:(IntersectionObserverContainerOptions *)containerOptions
-              targetOptions:(IntersectionObserverTargetOptions *)targetOptions {
++ (BOOL)canReportWithRatio:(CGFloat)ratio
+          containerOptions:(IntersectionObserverContainerOptions *)containerOptions
+             targetOptions:(IntersectionObserverTargetOptions *)targetOptions {
     
     BOOL isInsecting = [self isInsectingWithRatio:ratio containerOptions:containerOptions targetOptions:targetOptions];
     
@@ -319,14 +345,17 @@
     if (containerOptions.measureWhenAppStateChanged) {
         UIApplicationState prevApplicationState = [IntersectionObserverManager shareInstance].previousApplicationState;
         if (prevApplicationState != UIApplicationStateActive && UIApplication.sharedApplication.applicationState == UIApplicationStateActive) {
-            return isInsecting != targetOptions.previousInsecting;
+            return ![[IntersectionObserverReuseManager shareInstance] isDataKeyVisible:targetOptions.dataKey inScope:containerOptions.scope];
+            // return isInsecting != targetOptions.previousInsecting;
         }
         if (prevApplicationState != UIApplicationStateBackground && UIApplication.sharedApplication.applicationState == UIApplicationStateBackground) {
-            return isInsecting != targetOptions.previousInsecting;
+            return ![[IntersectionObserverReuseManager shareInstance] isDataKeyVisible:targetOptions.dataKey inScope:containerOptions.scope];
+            // return isInsecting != targetOptions.previousInsecting;
         }
     }
     
     // 可视状态发生变化
+    /*
     if (containerOptions.measureWhenVisibilityChanged) {
         BOOL targetViewVisible = [self isTargetViewVisible:targetOptions.targetView inContainerView:containerOptions.containerView];
         BOOL containerViewVisible = [self isContainerViewVisible:containerOptions.containerView];
@@ -334,11 +363,19 @@
             return isInsecting != targetOptions.previousInsecting;
         }
     }
+    */
     
-    // 数据发生变化
-    if (targetOptions.dataKey && targetOptions.dataKey.length > 0 && targetOptions.previousDataKey &&
-        targetOptions.previousDataKey.length > 0 && ![targetOptions.dataKey isEqualToString:targetOptions.previousDataKey]) {
-        return isInsecting != targetOptions.previousInsecting;
+    // 数据发生变化（或者复用）
+    if (targetOptions.dataKey && targetOptions.dataKey.length > 0 && ![targetOptions.dataKey isEqualToString:targetOptions.previousDataKey]) {
+        BOOL inVisiblePool = [[IntersectionObserverReuseManager shareInstance] isDataKeyVisible:targetOptions.dataKey inScope:containerOptions.scope];
+        if ([targetOptions.dataKey isEqualToString:@"7"]) {
+            NSLog(@"");
+        }
+        if (isInsecting) {
+            return !inVisiblePool;
+        } else {
+            return inVisiblePool;
+        }
     }
     
     // 前后 ratio 变化
@@ -383,12 +420,12 @@
         UIApplication.sharedApplication.applicationState == UIApplicationStateBackground) {
         return NO;
     }
-    UIView *containerView = containerOptions.containerView;
-    UIView *targetView = targetOptions.targetView;
-    if (containerOptions.measureWhenVisibilityChanged && ![self isTargetViewVisible:targetView inContainerView:containerView]) {
+    if (containerOptions.measureWhenVisibilityChanged &&
+        ![self isTargetViewVisible:targetOptions.targetView inContainerView:containerOptions.containerView]) {
         return NO;
     }
-    if (containerOptions.measureWhenVisibilityChanged && ![self isContainerViewVisible:containerView]) {
+    if (containerOptions.measureWhenVisibilityChanged &&
+        ![self isContainerViewVisible:containerOptions.containerView]) {
         return NO;
     }
     NSArray<NSNumber *> *sortedThresholds = [containerOptions.thresholds sortedArrayUsingSelector:@selector(compare:)];
@@ -523,6 +560,58 @@ static char kAssociatedObjectKey_UtilsPreviousData;
 
 - (NSDictionary *)previousData {
     return objc_getAssociatedObject(self, &kAssociatedObjectKey_UtilsPreviousData);
+}
+
+@end
+
+
+@implementation IntersectionObserverReuseManager
+
++ (instancetype)shareInstance {
+    static IntersectionObserverReuseManager *instance;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        instance = [[IntersectionObserverReuseManager alloc] init];
+    });
+    return instance;
+}
+
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        _visibleDataKeys = [[NSMutableDictionary alloc] init];
+    }
+    return self;
+}
+
+- (BOOL)isDataKeyVisible:(NSString *)dataKey inScope:(NSString *)scope {
+    if (!dataKey || dataKey.length <= 0 || !scope || scope.length <= 0) {
+        NSAssert(NO, @"");
+        return NO;
+    }
+    NSMutableSet *dataKeys = self.visibleDataKeys && self.visibleDataKeys[scope] ? [[NSMutableSet alloc] initWithSet:self.visibleDataKeys[scope]] : [NSMutableSet set];
+    return [dataKeys containsObject:dataKey];
+}
+
+- (void)addVisibleDataKey:(NSString *)dataKey toScope:(NSString *)scope {
+    if (!dataKey || dataKey.length <= 0 || !scope || scope.length <= 0) {
+        NSAssert(NO, @"");
+        return;
+    }
+    NSMutableSet *dataKeys = self.visibleDataKeys && self.visibleDataKeys[scope] ? [[NSMutableSet alloc] initWithSet:self.visibleDataKeys[scope]] : [NSMutableSet set];
+    [dataKeys addObject:dataKey];
+    [self.visibleDataKeys setObject:dataKeys forKey:scope];
+}
+
+- (void)removeVisibleDataKey:(NSString *)dataKey fromScope:(NSString *)scope {
+    if (!dataKey || dataKey.length <= 0 || !scope || scope.length <= 0) {
+        NSAssert(NO, @"");
+        return;
+    }
+    NSMutableSet *dataKeys = self.visibleDataKeys && self.visibleDataKeys[scope] ? [[NSMutableSet alloc] initWithSet:self.visibleDataKeys[scope]] : [NSMutableSet set];
+    if ([dataKeys containsObject:dataKeys]) {
+        [dataKeys removeObject:dataKeys];
+    }
 }
 
 @end
