@@ -11,6 +11,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ZHExample3ViewController : UIViewController
 
+@property(nonatomic, assign) BOOL isRandom;
+
 @end
 
 NS_ASSUME_NONNULL_END

@@ -16,21 +16,13 @@
 
 @end
 
-
-@interface ZHExample2ViewController ()
-
-@property(nonatomic, assign) BOOL isDelay;
-@property(nonatomic, assign) BOOL isReuse;
-
-@end
-
 @implementation ZHExample2ViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    self.isDelay = YES;
-    self.isReuse = YES;
+    // self.isDelay = YES;
+    // self.isReuse = YES;
     
     [self initIntersectionObserver];
     [self updateNavigationItem];
@@ -40,6 +32,7 @@
 }
 
 - (void)updateNavigationItem {
+    /*
     NSMutableArray *items = [[NSMutableArray alloc] init];
     if (self.isReuse) {
         [items addObject:[[UIBarButtonItem alloc] initWithTitle:@"切到Cell不复用" style:UIBarButtonItemStylePlain target:self action:@selector(handleChangeReuse)]];
@@ -52,6 +45,7 @@
         [items addObject:[[UIBarButtonItem alloc] initWithTitle:@"切到实时曝光" style:UIBarButtonItemStylePlain target:self action:@selector(handleChangeDelay)]];
     }
     self.navigationItem.rightBarButtonItems = items;
+    */
 }
 
 - (void)handleChangeReuse {

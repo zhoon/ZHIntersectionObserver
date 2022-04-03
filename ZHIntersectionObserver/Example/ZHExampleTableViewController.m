@@ -19,7 +19,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor whiteColor];
-    self.tableView.rowHeight = 100;
+    self.tableView.rowHeight = 80;
     self.title = @"ZHIntersectionObsever";
 }
 
@@ -30,7 +30,7 @@
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    return 3;
+    return 7;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -47,13 +47,33 @@
     }
     
     else if (indexPath.row == 1) {
-        cell.textLabel.text = @"列表滚动触发曝光";
-        cell.detailTextLabel.text = @"设置最小曝光时间，过滤快速滚动 cell，支持 cell 复用";
+        cell.textLabel.text = @"列表滚动触发曝光 - 1";
+        cell.detailTextLabel.text = @"实时曝光，Cell 不复用";
     }
     
     else if (indexPath.row == 2) {
-        cell.textLabel.text = @"数据变化触发曝光";
-        cell.detailTextLabel.text = @"过滤短时间曝光的数据，数据变化自动检测新数据曝光";
+        cell.textLabel.text = @"列表滚动触发曝光 - 2";
+        cell.detailTextLabel.text = @"实时曝光，Cell 有复用";
+    }
+    
+    else if (indexPath.row == 3) {
+        cell.textLabel.text = @"列表滚动触发曝光 - 3";
+        cell.detailTextLabel.text = @"设置最小曝光时间，过滤快速滚动 cell，Cell 不复用";
+    }
+    
+    else if (indexPath.row == 4) {
+        cell.textLabel.text = @"列表滚动触发曝光 - 4";
+        cell.detailTextLabel.text = @"设置最小曝光时间，过滤快速滚动 cell，Cell 有复用";
+    }
+    
+    else if (indexPath.row == 5) {
+        cell.textLabel.text = @"数据变化触发曝光 - 1";
+        cell.detailTextLabel.text = @"过滤短时间曝光，数据变化自动检测曝光（数据不重复）";
+    }
+    
+    else if (indexPath.row == 6) {
+        cell.textLabel.text = @"数据变化触发曝光 - 2";
+        cell.detailTextLabel.text = @"过滤短时间曝光，数据变化自动检测曝光（数据可重复）";
     }
     
     else {
@@ -70,10 +90,36 @@
     }
     if (indexPath.row == 1) {
         ZHExample2ViewController *vc = [[ZHExample2ViewController alloc] init];
+        vc.isDelay = NO;
+        vc.isReuse = NO;
         [self.navigationController pushViewController:vc animated:YES];
     }
     if (indexPath.row == 2) {
+        ZHExample2ViewController *vc = [[ZHExample2ViewController alloc] init];
+        vc.isDelay = NO;
+        vc.isReuse = YES;
+        [self.navigationController pushViewController:vc animated:YES];
+    }
+    if (indexPath.row == 3) {
+        ZHExample2ViewController *vc = [[ZHExample2ViewController alloc] init];
+        vc.isDelay = YES;
+        vc.isReuse = NO;
+        [self.navigationController pushViewController:vc animated:YES];
+    }
+    if (indexPath.row == 4) {
+        ZHExample2ViewController *vc = [[ZHExample2ViewController alloc] init];
+        vc.isDelay = YES;
+        vc.isReuse = YES;
+        [self.navigationController pushViewController:vc animated:YES];
+    }
+    if (indexPath.row == 5) {
         ZHExample3ViewController *vc = [[ZHExample3ViewController alloc] init];
+        vc.isRandom = NO;
+        [self.navigationController pushViewController:vc animated:YES];
+    }
+    if (indexPath.row == 6) {
+        ZHExample3ViewController *vc = [[ZHExample3ViewController alloc] init];
+        vc.isRandom = YES;
         [self.navigationController pushViewController:vc animated:YES];
     }
 }

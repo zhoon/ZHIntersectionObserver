@@ -35,7 +35,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    self.thresholds = @[@[@1], @[@0.2, @0.4, @0.6, @0.8, @1], @[@0.5], @[@0.25, @0.5, @0.74, @1], @[@0.8]];
+    self.thresholds = @[@[@1], @[@0.4, @0.7, @1], @[@0.4], @[@0.25, @0.5, @0.75, @1], @[@0.8]];
     self.view.backgroundColor = [UIColor whiteColor];
     
     [self initSubViews];

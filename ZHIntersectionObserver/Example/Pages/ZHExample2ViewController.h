@@ -11,6 +11,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ZHExample2ViewController : UITableViewController
 
+@property(nonatomic, assign) BOOL isDelay;
+@property(nonatomic, assign) BOOL isReuse;
+
 @end
 
 NS_ASSUME_NONNULL_END
