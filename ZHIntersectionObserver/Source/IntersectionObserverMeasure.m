@@ -165,32 +165,6 @@
     });
 }
 
-+ (NSArray <IntersectionObserverEntry *> *)filterHideEntries:(NSArray <IntersectionObserverEntry *> *)hideEntries
-                                               inShowEntries:(NSArray <IntersectionObserverEntry *> *)showEntries {
-    NSMutableArray *filterEntries = [[NSMutableArray alloc] init];
-    NSMutableArray *dataKeys = [[NSMutableArray alloc] init];
-    for (NSInteger i = 0; i < showEntries.count; i++) {
-        IntersectionObserverEntry *entry = showEntries[i];
-        if (entry.dataKey && entry.dataKey.length > 0) {
-            [dataKeys addObject:entry.dataKey];
-        }
-    }
-    for (NSInteger i = 0; i < hideEntries.count; i++) {
-        IntersectionObserverEntry *entry = hideEntries[i];
-        if (!entry.dataKey || entry.dataKey.length <= 0) {
-            [filterEntries addObject:entry];
-            continue;
-        }
-        if (entry.dataKey && entry.dataKey.length > 0 && ![dataKeys containsObject:entry.dataKey]) {
-            [filterEntries addObject:entry];
-            continue;
-        }
-    }
-    // showEntries 放在最后
-    [filterEntries addObjectsFromArray:showEntries];
-    return filterEntries.copy;
-}
-
 + (void)delayMeasureWithObserver:(IntersectionObserver *)observer
                          entries:(NSArray <IntersectionObserverEntry *> *)entries
                    reusedEntries:(NSArray <IntersectionObserverEntry *> *)reusedEntries {
