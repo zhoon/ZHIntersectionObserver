@@ -84,15 +84,15 @@
             if (options.dataKey && options.dataKey.length > 0 && ![options.dataKey isEqualToString:options.previousDataKey] &&
                 options.previousInsecting && options.previousFixedInsecting) {
                 IntersectionObserverEntry *entry =
-                    [IntersectionObserverEntry initEntryWithTarget:curTargetView
-                                                           dataKey:options.previousDataKey
-                                                              data:options.previousData
-                                                boundingClientRect:viewportTargetRect
-                                                 intersectionRatio:ratio
-                                                  intersectionRect:intersectionRect
-                                                       isInsecting:NO
-                                                        rootBounds:containerView.bounds
-                                                              time:floor([NSDate date].timeIntervalSince1970 * 1000)];
+                    [IntersectionObserverEntry initEntryWithTargetView:curTargetView
+                                                               dataKey:options.previousDataKey
+                                                                  data:options.previousData
+                                                    boundingClientRect:viewportTargetRect
+                                                     intersectionRatio:ratio
+                                                      intersectionRect:intersectionRect
+                                                           isInsecting:NO
+                                                            rootBounds:containerView.bounds
+                                                                  time:floor([NSDate date].timeIntervalSince1970 * 1000)];
                 options.previousFixedInsecting = NO;
                 [reusedEntries addObject:entry];
             }
@@ -103,15 +103,15 @@
             
             if (canReport) {
                 IntersectionObserverEntry *entry =
-                    [IntersectionObserverEntry initEntryWithTarget:curTargetView
-                                                           dataKey:options.dataKey
-                                                              data:options.data
-                                                boundingClientRect:viewportTargetRect
-                                                 intersectionRatio:ratio
-                                                  intersectionRect:intersectionRect
-                                                       isInsecting:isInsecting
-                                                        rootBounds:containerView.bounds
-                                                              time:floor([NSDate date].timeIntervalSince1970 * 1000)];
+                    [IntersectionObserverEntry initEntryWithTargetView:curTargetView
+                                                               dataKey:options.dataKey
+                                                                  data:options.data
+                                                    boundingClientRect:viewportTargetRect
+                                                     intersectionRatio:ratio
+                                                      intersectionRect:intersectionRect
+                                                           isInsecting:isInsecting
+                                                            rootBounds:containerView.bounds
+                                                                  time:floor([NSDate date].timeIntervalSince1970 * 1000)];
                 if (isInsecting) {
                     [entries addObject:entry];
                 } else {
@@ -212,11 +212,11 @@
         IntersectionObserverEntry *oldEntry = entries[i];
         
         // 这里不要判断 target 是否 visible
-        if (!oldEntry || !oldEntry.target) {
+        if (!oldEntry || !oldEntry.targetView) {
             continue;
         }
         
-        IntersectionObserverTargetOptions *options = [targetOptions objectForKey:oldEntry.target];
+        IntersectionObserverTargetOptions *options = [targetOptions objectForKey:oldEntry.targetView];
         if (!options) {
             continue;
         }
@@ -234,15 +234,15 @@
         if (!canReport) continue;
         
         IntersectionObserverEntry *entry =
-            [IntersectionObserverEntry initEntryWithTarget:targetView
-                                                   dataKey:options.dataKey
-                                                      data:oldEntry.data
-                                        boundingClientRect:viewportTargetRect
-                                         intersectionRatio:ratio
-                                          intersectionRect:intersectionRect
-                                               isInsecting:isInsecting
-                                                rootBounds:containerView.bounds
-                                                      time:floor([NSDate date].timeIntervalSince1970 * 1000)];
+            [IntersectionObserverEntry initEntryWithTargetView:targetView
+                                                       dataKey:options.dataKey
+                                                          data:oldEntry.data
+                                            boundingClientRect:viewportTargetRect
+                                             intersectionRatio:ratio
+                                              intersectionRect:intersectionRect
+                                                   isInsecting:isInsecting
+                                                    rootBounds:containerView.bounds
+                                                          time:floor([NSDate date].timeIntervalSince1970 * 1000)];
         [filterEntries addObject:entry];
         
         options.previousInsecting = isInsecting;
@@ -274,8 +274,8 @@
         if (reusedEntries.count > 0) {
             NSMutableArray *filterReusedEntries = [[NSMutableArray alloc] init];
             [reusedEntries enumerateObjectsUsingBlock:^(IntersectionObserverEntry * _Nonnull entry, NSUInteger idx, BOOL * _Nonnull stop) {
-                if (entry.target && entry.target.intersectionObserverTargetOptions) {
-                    NSString *curDataKey = entry.target.intersectionObserverTargetOptions.dataKey;
+                if (entry.targetView && entry.targetView.intersectionObserverTargetOptions) {
+                    NSString *curDataKey = entry.targetView.intersectionObserverTargetOptions.dataKey;
                     if (![curDataKey isEqualToString:entry.dataKey]) {
                         [filterReusedEntries addObject:entry];
                     }

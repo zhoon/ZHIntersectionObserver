@@ -32,7 +32,7 @@ typedef void (^IntersectionObserverCallback)(NSString *scope, NSArray<Intersecti
 @property(nonatomic, assign) CGRect rootBounds;
 
 /// 对应的 target 对象
-@property(nonatomic, weak) UIView *target;
+@property(nonatomic, weak) UIView *targetView;
 
 /// 触发事件时的时间戳，可用来计算 target 在屏幕内停留时间，单位 ms
 @property(nonatomic, assign) NSTimeInterval time;
@@ -47,15 +47,15 @@ typedef void (^IntersectionObserverCallback)(NSString *scope, NSArray<Intersecti
 - (instancetype)init UNAVAILABLE_ATTRIBUTE;
 
 /// 初始化方法
-+ (instancetype)initEntryWithTarget:(UIView *)target
-                            dataKey:(NSString *)dataKey
-                               data:(NSDictionary *)data
-                 boundingClientRect:(CGRect)boundingClientRect
-                  intersectionRatio:(CGFloat)intersectionRatio
-                   intersectionRect:(CGRect)intersectionRect
-                        isInsecting:(BOOL)isInsecting
-                         rootBounds:(CGRect)rootBounds
-                               time:(NSTimeInterval)time;
++ (instancetype)initEntryWithTargetView:(UIView *)targetView
+                                dataKey:(NSString *)dataKey
+                                   data:(NSDictionary *)data
+                     boundingClientRect:(CGRect)boundingClientRect
+                      intersectionRatio:(CGFloat)intersectionRatio
+                       intersectionRect:(CGRect)intersectionRect
+                            isInsecting:(BOOL)isInsecting
+                             rootBounds:(CGRect)rootBounds
+                                   time:(NSTimeInterval)time;
 
 @end
 

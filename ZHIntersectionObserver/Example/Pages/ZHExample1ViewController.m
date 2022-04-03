@@ -124,7 +124,7 @@
         for (NSInteger i = 0; i < entries.count; i++) {
             strongSelf.count++;
             IntersectionObserverEntry *entry = entries[i];
-            entry.target.backgroundColor = entry.isInsecting ? [UIColor orangeColor] : [UIColor redColor];
+            entry.targetView.backgroundColor = entry.isInsecting ? [UIColor orangeColor] : [UIColor redColor];
             strongSelf.leftToplabel.text = strongSelf.rightToplabel.text = strongSelf.leftBottomlabel.text = strongSelf.rightBottomlabel.text = [NSString stringWithFormat:@"%@%@", @(ceil(entry.intersectionRatio * 100)), @"%"];
             [strongSelf updateLabelText:[NSString stringWithFormat:@"可拖动 \n isInsecting = %@ \n changeCount = %@", @(entry.isInsecting), @(strongSelf.count)]];
         }
