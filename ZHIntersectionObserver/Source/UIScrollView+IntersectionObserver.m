@@ -75,7 +75,7 @@ static char kAssociatedObjectKey_throttlePrevDate;
     if (self.intersectionObserverContainerOptions) {
         NSString *scope = self.intersectionObserverContainerOptions.scope;
         if (scope && scope.length > 0) {
-            [[IntersectionObserverManager shareInstance] emitObserverEvent:scope];
+            [[IntersectionObserverManager shareInstance] emitObserverEventWithScope:scope];
         } else {
             NSAssert(NO, @"no scope");
         }

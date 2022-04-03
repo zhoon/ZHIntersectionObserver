@@ -27,9 +27,6 @@ NS_ASSUME_NONNULL_BEGIN
 + (BOOL)isTargetOptions:(IntersectionObserverTargetOptions *)options1
         sameWithOptions:(IntersectionObserverTargetOptions *)options2;
 
-/// 重置 targetOptions，因为 dataKey 变了
-+ (void)resetTargetOptions:(IntersectionObserverTargetOptions *)targetOptions;
-
 @end
 
 

@@ -80,11 +80,11 @@
     self.previousApplicationState = UIApplicationStateBackground;
 }
 
-- (void)emitObserverEvent:(NSString *)scope {
-    [self emitObserverEvent:scope forTargetView:nil];
+- (void)emitObserverEventWithScope:(NSString *)scope {
+    [self emitObserverEventWithScope:scope forTargetView:nil];
 }
 
-- (void)emitObserverEvent:(NSString *)scope forTargetView:(UIView * __nullable)targetView {
+- (void)emitObserverEventWithScope:(NSString *)scope forTargetView:(UIView * __nullable)targetView {
     if (!scope && scope.length <= 0) {
         NSAssert(NO, @"no scope");
         return;

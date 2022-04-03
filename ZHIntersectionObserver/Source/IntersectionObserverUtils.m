@@ -12,6 +12,7 @@
 #import "IntersectionObserverOptions.h"
 #import "IntersectionObserverManager.h"
 #import "IntersectionObserverReuseManager.h"
+#import "UIView+IntersectionObserver.h"
 
 @interface IntersectionObserverContainerOptions (Utils)
 
@@ -45,6 +46,7 @@
         
         // 判断是否有 containerOptions
         IntersectionObserverContainerOptions *containerOptions = observer.containerOptions;
+        NSString *scope = containerOptions.scope;
         NSMapTable *targetOptions = observer.targetOptions;
         if (!targetOptions || targetOptions.count <= 0) {
             return;
@@ -78,7 +80,6 @@
             CGRect intersectionRect = [[calcResult objectForKey:@"intersectionRect"] CGRectValue];
             if (ratio < 0) continue;
             
-            // 复用 view，立刻发送复用前数据的 isInsecting = NO 事件
             // previousFixedInsecting 是为了一个 view 被复用很多次都没有曝光的情况下，会一直发送 isInsecting = NO 的事件，例如 delayReport 并且快速滚动的时候
             if (options.dataKey && options.dataKey.length > 0 && ![options.dataKey isEqualToString:options.previousDataKey] &&
                 options.previousInsecting && options.previousFixedInsecting) {
@@ -140,37 +141,21 @@
         }
         
         if (hideEntries.count > 0) {
-            for (NSInteger i = 0; i < hideEntries.count; i++) {
-                IntersectionObserverEntry *entry = hideEntries[i];
-                if (entry.dataKey && entry.dataKey.length > 0) {
-                    [[IntersectionObserverReuseManager shareInstance] removeVisibleDataKey:entry.dataKey fromScope:containerOptions.scope];
-                }
-            }
+            [[IntersectionObserverReuseManager shareInstance] removeVisibleEntries:hideEntries.copy fromScope:scope];
             if (containerOptions.callback) {
-                containerOptions.callback(containerOptions.scope, hideEntries.copy);
+                containerOptions.callback(scope, hideEntries.copy);
             }
         }
-        
-        /*
-        if (reusedEntries.count > 0) {
-            containerOptions.callback(containerOptions.scope, reusedEntries.copy);
-        }
-        */
         
         if (entries.count > 0) {
             if (delayReport) {
                 dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(containerOptions.intersectionDuration / 1000.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                    [self delayMeasureWithObserver:observer entries:entries.copy];
+                    [self delayMeasureWithObserver:observer entries:entries.copy reusedEntries:reusedEntries.copy];
                 });
             } else {
-                for (NSInteger i = 0; i < entries.count; i++) {
-                    IntersectionObserverEntry *entry = entries[i];
-                    if (entry.dataKey && entry.dataKey.length > 0) {
-                        [[IntersectionObserverReuseManager shareInstance] addVisibleDataKey:entry.dataKey toScope:containerOptions.scope];
-                    }
-                }
+                [[IntersectionObserverReuseManager shareInstance] addVisibleEntries:entries.copy toScope:scope];
                 if (containerOptions.callback) {
-                    containerOptions.callback(containerOptions.scope, entries.copy);
+                    containerOptions.callback(scope, entries.copy);
                 } else {
                     NSAssert(NO, @"no callback");
                 }
@@ -207,10 +192,12 @@
 }
 
 + (void)delayMeasureWithObserver:(IntersectionObserver *)observer
-                         entries:(NSArray <IntersectionObserverEntry *> *)entries {
+                         entries:(NSArray <IntersectionObserverEntry *> *)entries
+                   reusedEntries:(NSArray <IntersectionObserverEntry *> *)reusedEntries {
     
     // 简单判断下当前 options 和 entries
     IntersectionObserverContainerOptions *containerOptions = observer.containerOptions;
+    NSString *scope = containerOptions.scope;
     NSMapTable *targetOptions = observer.targetOptions;
     if (!containerOptions || !targetOptions || targetOptions.count <= 0 || entries.count <= 0) return;
     
@@ -243,7 +230,7 @@
         
         BOOL isInsecting = [self isInsectingWithRatio:ratio containerOptions:containerOptions targetOptions:options];
         // BOOL isInsectingChanged = isInsecting == oldEntry.isInsecting && isInsecting != options.previousInsecting;
-        BOOL canReport = [oldEntry.dataKey isEqualToString:options.dataKey] && isInsecting == oldEntry.isInsecting && ![[IntersectionObserverReuseManager shareInstance] isDataKeyVisible:options.dataKey inScope:containerOptions.scope];
+        BOOL canReport = [oldEntry.dataKey isEqualToString:options.dataKey] && isInsecting == oldEntry.isInsecting && ![[IntersectionObserverReuseManager shareInstance] isDataKeyVisible:options.dataKey inScope:scope];
         if (!canReport) continue;
         
         IntersectionObserverEntry *entry =
@@ -275,18 +262,31 @@
     }
     
     if (filterEntries.count > 0) {
-        for (NSInteger i = 0; i < filterEntries.count; i++) {
-            IntersectionObserverEntry *entry = filterEntries[i];
-            if (entry.dataKey && entry.dataKey.length > 0) {
-                [[IntersectionObserverReuseManager shareInstance] addVisibleDataKey:entry.dataKey toScope:containerOptions.scope];
-            }
-        }
+        [[IntersectionObserverReuseManager shareInstance] addVisibleEntries:filterEntries.copy toScope:scope];
         if (containerOptions.callback) {
-            containerOptions.callback(containerOptions.scope, filterEntries.copy);
+            containerOptions.callback(scope, filterEntries.copy);
         } else {
             NSAssert(NO, @"no callback");
         }
     }
+    
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        if (reusedEntries.count > 0) {
+            NSMutableArray *filterReusedEntries = [[NSMutableArray alloc] init];
+            [reusedEntries enumerateObjectsUsingBlock:^(IntersectionObserverEntry * _Nonnull entry, NSUInteger idx, BOOL * _Nonnull stop) {
+                if (entry.target && entry.target.intersectionObserverTargetOptions) {
+                    NSString *curDataKey = entry.target.intersectionObserverTargetOptions.dataKey;
+                    if (![curDataKey isEqualToString:entry.dataKey]) {
+                        [filterReusedEntries addObject:entry];
+                    }
+                }
+            }];
+            [[IntersectionObserverReuseManager shareInstance] removeVisibleEntries:filterReusedEntries.copy fromScope:scope];
+            if (containerOptions.callback && filterReusedEntries.count > 0) {
+                containerOptions.callback(scope, filterReusedEntries);
+            }
+        }
+    });
 }
 
 + (NSDictionary *)calcRatioWithTargetView:(UIView *)targetView
@@ -461,15 +461,6 @@
     return NO;
 }
 
-+ (void)resetTargetOptions:(IntersectionObserverTargetOptions *)targetOptions {
-    if (targetOptions) {
-        targetOptions.previousRatio = 0;
-        targetOptions.previousVisible = NO;
-        targetOptions.previousDataKey = nil;
-        targetOptions.previousInsecting = NO;
-    }
-}
-
 + (BOOL)isCGRectValidated:(CGRect)rect {
     BOOL isCGRectNaN = isnan(rect.origin.x) || isnan(rect.origin.y) || isnan(rect.size.width) || isnan(rect.size.height);
     BOOL isCGRectInf = isinf(rect.origin.x) || isinf(rect.origin.y) || isinf(rect.size.width) || isinf(rect.size.height);
@@ -479,13 +470,7 @@
 @end
 
 
-static char kAssociatedObjectKey_UtilsPreviousRatio;
-static char kAssociatedObjectKey_UtilsPreviousInsecting;
-static char kAssociatedObjectKey_UtilsPreviousFixedInsecting;
-static char kAssociatedObjectKey_UtilsPreviousVisible;
 static char kAssociatedObjectKey_UtilsContainerPreviousVisible;
-static char kAssociatedObjectKey_UtilsPreviousDataKey;
-static char kAssociatedObjectKey_UtilsPreviousData;
 
 @implementation IntersectionObserverContainerOptions (Utils)
 
@@ -499,6 +484,13 @@ static char kAssociatedObjectKey_UtilsPreviousData;
 
 @end
 
+
+static char kAssociatedObjectKey_UtilsPreviousRatio;
+static char kAssociatedObjectKey_UtilsPreviousInsecting;
+static char kAssociatedObjectKey_UtilsPreviousFixedInsecting;
+static char kAssociatedObjectKey_UtilsPreviousVisible;
+static char kAssociatedObjectKey_UtilsPreviousDataKey;
+static char kAssociatedObjectKey_UtilsPreviousData;
 
 @implementation IntersectionObserverTargetOptions (Utils)
 

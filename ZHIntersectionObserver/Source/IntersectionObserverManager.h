@@ -20,8 +20,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, assign, readonly) UIApplicationState previousApplicationState;
 
 /// 触发事件，一般在滚动事件里面触发
-- (void)emitObserverEvent:(NSString *)scope;
-- (void)emitObserverEvent:(NSString *)scope forTargetView:(UIView * __nullable)targetView;
+- (void)emitObserverEventWithScope:(NSString *)scope;
+- (void)emitObserverEventWithScope:(NSString *)scope forTargetView:(UIView * __nullable)targetView;
 
 /// 添加 observer
 - (IntersectionObserver *)addObserverWithOptions:(IntersectionObserverContainerOptions *)options;

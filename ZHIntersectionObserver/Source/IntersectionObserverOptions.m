@@ -107,7 +107,7 @@
     self.rootMargin = rootMargin;
     if (self.containerView) {
         if (self.scope && self.scope.length > 0) {
-            [[IntersectionObserverManager shareInstance] emitObserverEvent:self.scope];
+            [[IntersectionObserverManager shareInstance] emitObserverEventWithScope:self.scope];
         }
     } else {
         NSAssert(NO, @"no containerView");
@@ -124,7 +124,7 @@
     self.thresholds = thresholds;
     if (self.containerView) {
         if (self.scope && self.scope.length > 0) {
-            [[IntersectionObserverManager shareInstance] emitObserverEvent:self.scope];
+            [[IntersectionObserverManager shareInstance] emitObserverEventWithScope:self.scope];
         }
     } else {
         NSAssert(NO, @"no containerView");
@@ -138,7 +138,7 @@
     self.intersectionDuration = intersectionDuration;
     if (self.containerView) {
         if (self.scope && self.scope.length > 0) {
-            [[IntersectionObserverManager shareInstance] emitObserverEvent:self.scope];
+            [[IntersectionObserverManager shareInstance] emitObserverEventWithScope:self.scope];
         }
     } else {
         NSAssert(NO, @"no containerView");
@@ -193,12 +193,10 @@
     } */
     self.dataKey = dataKey;
     self.data = data;
-    // resetTargetOptions 改为其他地方调用
-    // [IntersectionObserverUtils resetTargetOptions:self];
     if (self.targetView) {
         if (self.scope && self.scope.length > 0) {
             NSLog(@"updateDataKey: targetView = %p, dataKey = %@, data = %@", self.targetView, self.dataKey, self.data);
-            [[IntersectionObserverManager shareInstance] emitObserverEvent:self.scope forTargetView:self.targetView];
+            [[IntersectionObserverManager shareInstance] emitObserverEventWithScope:self.scope forTargetView:self.targetView];
         }
     } else {
         NSAssert(NO, @"no targetView");

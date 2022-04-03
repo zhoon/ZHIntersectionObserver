@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+@class IntersectionObserverEntry;
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface IntersectionObserverReuseManager : NSObject
@@ -18,6 +20,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)isDataKeyVisible:(NSString *)dataKey inScope:(NSString *)scope;
 - (void)addVisibleDataKey:(NSString *)dataKey toScope:(NSString *)scope;
 - (void)removeVisibleDataKey:(NSString *)dataKey fromScope:(NSString *)scope;
+
+- (void)addVisibleEntries:(NSArray <IntersectionObserverEntry *> *)entries toScope:(NSString *)scope;
+- (void)removeVisibleEntries:(NSArray <IntersectionObserverEntry *> *)entries fromScope:(NSString *)scope;
 
 @end
 

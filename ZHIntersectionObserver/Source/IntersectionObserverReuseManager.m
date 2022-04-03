@@ -6,6 +6,7 @@
 //
 
 #import "IntersectionObserverReuseManager.h"
+#import "IntersectionObserverEntry.h"
 
 @implementation IntersectionObserverReuseManager
 
@@ -45,6 +46,15 @@
     [self.visibleDataKeys setObject:dataKeys forKey:scope];
 }
 
+- (void)addVisibleEntries:(NSArray <IntersectionObserverEntry *> *)entries toScope:(NSString *)scope {
+    if (!entries || entries.count <= 0) {
+        return;
+    }
+    [entries enumerateObjectsUsingBlock:^(IntersectionObserverEntry * _Nonnull entry, NSUInteger idx, BOOL * _Nonnull stop) {
+        [self addVisibleDataKey:entry.dataKey toScope:scope];
+    }];
+}
+
 - (void)removeVisibleDataKey:(NSString *)dataKey fromScope:(NSString *)scope {
     if (!dataKey || dataKey.length <= 0 || !scope || scope.length <= 0) {
         NSAssert(NO, @"");
@@ -55,6 +65,15 @@
         [dataKeys removeObject:dataKey];
     }
     [self.visibleDataKeys setObject:dataKeys forKey:scope];
+}
+
+- (void)removeVisibleEntries:(NSArray <IntersectionObserverEntry *> *)entries fromScope:(NSString *)scope {
+    if (!entries || entries.count <= 0) {
+        return;
+    }
+    [entries enumerateObjectsUsingBlock:^(IntersectionObserverEntry * _Nonnull entry, NSUInteger idx, BOOL * _Nonnull stop) {
+        [self removeVisibleDataKey:entry.dataKey fromScope:scope];
+    }];
 }
 
 @end

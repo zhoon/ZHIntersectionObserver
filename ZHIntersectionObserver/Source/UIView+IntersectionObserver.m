@@ -93,7 +93,7 @@ static char kAssociatedObjectKey_intersectionObserverTargetOptions;
             // 启动监听
             [self.intersectionObserver observe];
             // 添加成功证明某些数据变了，需要重新触发一次检查
-            [[IntersectionObserverManager shareInstance] emitObserverEvent:scope];
+            [[IntersectionObserverManager shareInstance] emitObserverEventWithScope:scope];
         } else {
             NSAssert(NO, @"no scope");
         }
@@ -148,7 +148,7 @@ static char kAssociatedObjectKey_intersectionObserverTargetOptions;
                     }
                     [self._uiViewTargetObserver addObserver];
                     // 添加成功证明某些数据变了，需要重新触发一次检查
-                    [[IntersectionObserverManager shareInstance] emitObserverEvent:intersectionObserverTargetOptions.scope];
+                    [[IntersectionObserverManager shareInstance] emitObserverEventWithScope:intersectionObserverTargetOptions.scope];
                 }
             } else {
                 NSAssert(NO, @"no target observer");
@@ -187,7 +187,7 @@ static char kAssociatedObjectKey_intersectionObserverTargetOptions;
     if (self.intersectionObserverTargetOptions || self.intersectionObserverContainerOptions) {
         NSString *scope = self.intersectionObserverTargetOptions.scope ?: self.intersectionObserverContainerOptions.scope;
         if (scope && scope.length > 0) {
-            [[IntersectionObserverManager shareInstance] emitObserverEvent:scope forTargetView:targetView];
+            [[IntersectionObserverManager shareInstance] emitObserverEventWithScope:scope forTargetView:targetView];
         } else {
             NSAssert(NO, @"no scope");
         }
