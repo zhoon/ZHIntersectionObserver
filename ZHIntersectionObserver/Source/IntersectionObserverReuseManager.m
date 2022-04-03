@@ -28,7 +28,11 @@
 }
 
 - (BOOL)isDataKeyVisible:(NSString *)dataKey inScope:(NSString *)scope {
-    if (!dataKey || dataKey.length <= 0 || !scope || scope.length <= 0) {
+    if (!dataKey || dataKey.length <= 0) {
+        NSLog(@"IntersectionObserverReuseManager no dataKey");
+        return NO;
+    }
+    if (!scope || scope.length <= 0) {
         NSAssert(NO, @"");
         return NO;
     }
@@ -37,7 +41,11 @@
 }
 
 - (void)addVisibleDataKey:(NSString *)dataKey toScope:(NSString *)scope {
-    if (!dataKey || dataKey.length <= 0 || !scope || scope.length <= 0) {
+    if (!dataKey || dataKey.length <= 0) {
+        NSLog(@"IntersectionObserverReuseManager no dataKey");
+        return;
+    }
+    if (!scope || scope.length <= 0) {
         NSAssert(NO, @"");
         return;
     }
@@ -48,6 +56,7 @@
 
 - (void)addVisibleEntries:(NSArray <IntersectionObserverEntry *> *)entries toScope:(NSString *)scope {
     if (!entries || entries.count <= 0) {
+        NSLog(@"IntersectionObserverReuseManager no entries");
         return;
     }
     [entries enumerateObjectsUsingBlock:^(IntersectionObserverEntry * _Nonnull entry, NSUInteger idx, BOOL * _Nonnull stop) {
@@ -56,7 +65,11 @@
 }
 
 - (void)removeVisibleDataKey:(NSString *)dataKey fromScope:(NSString *)scope {
-    if (!dataKey || dataKey.length <= 0 || !scope || scope.length <= 0) {
+    if (!dataKey || dataKey.length <= 0) {
+        NSLog(@"IntersectionObserverReuseManager no dataKey");
+        return;
+    }
+    if (!scope || scope.length <= 0) {
         NSAssert(NO, @"");
         return;
     }
@@ -69,6 +82,7 @@
 
 - (void)removeVisibleEntries:(NSArray <IntersectionObserverEntry *> *)entries fromScope:(NSString *)scope {
     if (!entries || entries.count <= 0) {
+        NSLog(@"IntersectionObserverReuseManager no entries");
         return;
     }
     [entries enumerateObjectsUsingBlock:^(IntersectionObserverEntry * _Nonnull entry, NSUInteger idx, BOOL * _Nonnull stop) {
