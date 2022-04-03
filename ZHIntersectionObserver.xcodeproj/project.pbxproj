@@ -24,7 +24,7 @@
 		FEF6FA0326958BD400441571 /* IntersectionObserverEntry.m in Sources */ = {isa = PBXBuildFile; fileRef = FEF6F9FB26958BD400441571 /* IntersectionObserverEntry.m */; };
 		FEF6FA0426958BD400441571 /* IntersectionObserverOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = FEF6F9FE26958BD400441571 /* IntersectionObserverOptions.m */; };
 		FEF6FA0526958BD400441571 /* IntersectionObserverManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FEF6F9FF26958BD400441571 /* IntersectionObserverManager.m */; };
-		FEF6FA0626958BD400441571 /* IntersectionObserverUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = FEF6FA0126958BD400441571 /* IntersectionObserverUtils.m */; };
+		FEF6FA0626958BD400441571 /* IntersectionObserverMeasure.m in Sources */ = {isa = PBXBuildFile; fileRef = FEF6FA0126958BD400441571 /* IntersectionObserverMeasure.m */; };
 		FEF6FA0926958F3200441571 /* ZHExampleTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FEF6FA0826958F3200441571 /* ZHExampleTableViewController.m */; };
 /* End PBXBuildFile section */
 
@@ -78,12 +78,12 @@
 		FEF6F9F926958BD400441571 /* IntersectionObserver.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IntersectionObserver.m; sourceTree = "<group>"; };
 		FEF6F9FA26958BD400441571 /* IntersectionObserver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IntersectionObserver.h; sourceTree = "<group>"; };
 		FEF6F9FB26958BD400441571 /* IntersectionObserverEntry.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IntersectionObserverEntry.m; sourceTree = "<group>"; };
-		FEF6F9FC26958BD400441571 /* IntersectionObserverUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IntersectionObserverUtils.h; sourceTree = "<group>"; };
+		FEF6F9FC26958BD400441571 /* IntersectionObserverMeasure.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IntersectionObserverMeasure.h; sourceTree = "<group>"; };
 		FEF6F9FD26958BD400441571 /* IntersectionObserverEntry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IntersectionObserverEntry.h; sourceTree = "<group>"; };
 		FEF6F9FE26958BD400441571 /* IntersectionObserverOptions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IntersectionObserverOptions.m; sourceTree = "<group>"; };
 		FEF6F9FF26958BD400441571 /* IntersectionObserverManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IntersectionObserverManager.m; sourceTree = "<group>"; };
 		FEF6FA0026958BD400441571 /* IntersectionObserverOptions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IntersectionObserverOptions.h; sourceTree = "<group>"; };
-		FEF6FA0126958BD400441571 /* IntersectionObserverUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IntersectionObserverUtils.m; sourceTree = "<group>"; };
+		FEF6FA0126958BD400441571 /* IntersectionObserverMeasure.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = IntersectionObserverMeasure.m; sourceTree = "<group>"; };
 		FEF6FA0726958F3200441571 /* ZHExampleTableViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZHExampleTableViewController.h; sourceTree = "<group>"; };
 		FEF6FA0826958F3200441571 /* ZHExampleTableViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZHExampleTableViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -193,8 +193,8 @@
 				FEF6F9FF26958BD400441571 /* IntersectionObserverManager.m */,
 				FEF6FA0026958BD400441571 /* IntersectionObserverOptions.h */,
 				FEF6F9FE26958BD400441571 /* IntersectionObserverOptions.m */,
-				FEF6F9FC26958BD400441571 /* IntersectionObserverUtils.h */,
-				FEF6FA0126958BD400441571 /* IntersectionObserverUtils.m */,
+				FEF6F9FC26958BD400441571 /* IntersectionObserverMeasure.h */,
+				FEF6FA0126958BD400441571 /* IntersectionObserverMeasure.m */,
 				FE16541227F72A2D00B22378 /* IntersectionObserverReuseManager.h */,
 				FE16541327F72A2D00B22378 /* IntersectionObserverReuseManager.m */,
 				FEF6F9F426958BB600441571 /* UIView+IntersectionObserver.h */,
@@ -357,7 +357,7 @@
 				FE18C0DE2696C0CD005F94D4 /* ZHExample2ViewController.m in Sources */,
 				FEF6FA0426958BD400441571 /* IntersectionObserverOptions.m in Sources */,
 				FEF6FA0326958BD400441571 /* IntersectionObserverEntry.m in Sources */,
-				FEF6FA0626958BD400441571 /* IntersectionObserverUtils.m in Sources */,
+				FEF6FA0626958BD400441571 /* IntersectionObserverMeasure.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

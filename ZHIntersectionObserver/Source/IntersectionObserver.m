@@ -7,7 +7,7 @@
 
 #import "IntersectionObserver.h"
 #import "IntersectionObserverOptions.h"
-#import "IntersectionObserverUtils.h"
+#import "IntersectionObserverMeasure.h"
 
 @implementation IntersectionObserver
 
@@ -31,7 +31,7 @@
     if (target && options) {
         if ([self isTargetExisted:target]) {
             IntersectionObserverTargetOptions *oldOptions = [self.targetOptions objectForKey:target];
-            BOOL isSameOptions = [IntersectionObserverUtils isTargetOptions:options sameWithOptions:oldOptions];
+            BOOL isSameOptions = [IntersectionObserverMeasure isTargetOptions:options sameWithOptions:oldOptions];
             if (isSameOptions) {
                 return NO;
             } else {

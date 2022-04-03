@@ -1,12 +1,12 @@
 //
-//  IntersectionObserverUtils.m
+//  IntersectionObserverMeasure.m
 //  WeHear
 //
 //  Created by zhoonchen on 2021/6/28.
 //
 
 #import <objc/runtime.h>
-#import "IntersectionObserverUtils.h"
+#import "IntersectionObserverMeasure.h"
 #import "IntersectionObserver.h"
 #import "IntersectionObserverEntry.h"
 #import "IntersectionObserverOptions.h"
@@ -33,7 +33,7 @@
 @end
 
 
-@implementation IntersectionObserverUtils
+@implementation IntersectionObserverMeasure
 
 + (void)measureWithObserver:(IntersectionObserver *)observer {
     [self measureWithObserver:observer forTargetView:nil];
@@ -290,8 +290,8 @@
 }
 
 + (NSDictionary *)calcRatioWithTargetView:(UIView *)targetView
-                  containerView:(UIView *)containerView
-                     rootMargin:(UIEdgeInsets)rootMargin {
+                            containerView:(UIView *)containerView
+                               rootMargin:(UIEdgeInsets)rootMargin {
     
     CGFloat ratio = -1;
     

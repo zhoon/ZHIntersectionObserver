@@ -7,7 +7,7 @@
 
 #import "IntersectionObserverOptions.h"
 #import "IntersectionObserverManager.h"
-#import "IntersectionObserverUtils.h"
+#import "IntersectionObserverMeasure.h"
 #import "IntersectionObserverReuseManager.h"
 
 @interface IntersectionObserverContainerOptions ()

@@ -10,7 +10,7 @@
 #import "IntersectionObserverOptions.h"
 #import "IntersectionObserver.h"
 #import "IntersectionObserverManager.h"
-#import "IntersectionObserverUtils.h"
+#import "IntersectionObserverMeasure.h"
 
 @interface _UIViewObserver : NSObject
 
@@ -73,7 +73,7 @@ static char kAssociatedObjectKey_intersectionObserverTargetOptions;
         NSAssert(NO, @"同一个 View 不能同时设置 target 和 container options");
         return;
     }
-    BOOL isSameOptions = [IntersectionObserverUtils isContainerOptions:intersectionObserverContainerOptions sameWithOptions:self.intersectionObserverContainerOptions];
+    BOOL isSameOptions = [IntersectionObserverMeasure isContainerOptions:intersectionObserverContainerOptions sameWithOptions:self.intersectionObserverContainerOptions];
     if (isSameOptions) {
         return;
     }
@@ -126,7 +126,7 @@ static char kAssociatedObjectKey_intersectionObserverTargetOptions;
         NSAssert(NO, @"同一个 View 不能同时设置 target 和 container options");
         return;
     }
-    BOOL isSameOptions = [IntersectionObserverUtils isTargetOptions:intersectionObserverTargetOptions sameWithOptions:self.intersectionObserverTargetOptions];
+    BOOL isSameOptions = [IntersectionObserverMeasure isTargetOptions:intersectionObserverTargetOptions sameWithOptions:self.intersectionObserverTargetOptions];
     if (isSameOptions) {
         return;
     }

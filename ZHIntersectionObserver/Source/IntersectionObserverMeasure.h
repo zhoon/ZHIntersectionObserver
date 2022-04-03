@@ -1,5 +1,5 @@
 //
-//  IntersectionObserverUtils.h
+//  IntersectionObserverMeasure.h
 //  WeHear
 //
 //  Created by zhoonchen on 2021/6/28.
@@ -13,7 +13,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface IntersectionObserverUtils : NSObject
+@interface IntersectionObserverMeasure : NSObject
 
 /// 计算相交并且触发 callback
 + (void)measureWithObserver:(IntersectionObserver *)observer;

@@ -8,7 +8,7 @@
 #import "IntersectionObserver.h"
 #import "IntersectionObserverEntry.h"
 #import "IntersectionObserverOptions.h"
-#import "IntersectionObserverUtils.h"
+#import "IntersectionObserverMeasure.h"
 #import "IntersectionObserverManager.h"
 #import "IntersectionObserverReuseManager.h"
 #import "UIView+IntersectionObserver.h"

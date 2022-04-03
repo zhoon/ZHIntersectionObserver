@@ -8,7 +8,7 @@
 #import "IntersectionObserverManager.h"
 #import "IntersectionObserver.h"
 #import "IntersectionObserverOptions.h"
-#import "IntersectionObserverUtils.h"
+#import "IntersectionObserverMeasure.h"
 
 @interface IntersectionObserverManager ()
 
@@ -118,7 +118,7 @@
             IntersectionObserver *observer = [self.observers objectForKey:scope];
             if (observer) {
                 if (observer.containerOptions && observer.targetOptions) {
-                    [IntersectionObserverUtils measureWithObserver:observer forTargetView:targetView];
+                    [IntersectionObserverMeasure measureWithObserver:observer forTargetView:targetView];
                 } else {
                     NSAssert(NO, @"no containerOptions or targetOptions");
                 }

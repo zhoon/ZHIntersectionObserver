@@ -7,7 +7,7 @@
 
 #import <objc/runtime.h>
 #import "UIScrollView+IntersectionObserver.h"
-#import "IntersectionObserverUtils.h"
+#import "IntersectionObserverMeasure.h"
 #import "IntersectionObserverOptions.h"
 #import "IntersectionObserverManager.h"
 #import "UIView+IntersectionObserver.h"
