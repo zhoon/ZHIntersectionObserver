@@ -52,7 +52,7 @@
             return;
         }
         
-        // 获取配置参数值
+        // 获取配置参数值  
         UIView *containerView = containerOptions.containerView;
         UIEdgeInsets rootMargin = containerOptions.rootMargin;
         BOOL delayReport = containerOptions.intersectionDuration > 0;
@@ -95,11 +95,19 @@
                                                                   time:floor([NSDate date].timeIntervalSince1970 * 1000)];
                 options.previousFixedInsecting = NO;
                 [reusedEntries addObject:entry];
+                [[IntersectionObserverReuseManager shareInstance] addReusedDataKey:entry.dataKey toScope:scope];
             }
             
             BOOL isInsecting = [self isInsectingWithRatio:ratio containerOptions:containerOptions targetOptions:options];
             BOOL canReport = [self canReportWithRatio:ratio containerOptions:containerOptions targetOptions:options];
             BOOL delayReportEntry = delayReport && isInsecting; // 曝光的 entry 才有 delay 的资格
+            
+            if (isInsecting && options.dataKey) {
+                NSString *dataKey = options.dataKey;
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                    [[IntersectionObserverReuseManager shareInstance] removeReuseDataKey:dataKey fromScope:scope];
+                });
+            }
             
             if (canReport) {
                 IntersectionObserverEntry *entry =
@@ -147,6 +155,25 @@
             }
         }
         
+        if (reusedEntries.count > 0) {
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                if (reusedEntries.count > 0) {
+                    NSMutableArray *filterReusedEntries = [[NSMutableArray alloc] init];
+                    [reusedEntries enumerateObjectsUsingBlock:^(IntersectionObserverEntry * _Nonnull entry, NSUInteger idx, BOOL * _Nonnull stop) {
+                        BOOL removed = [[IntersectionObserverReuseManager shareInstance] isReusedDataKeyRemoved:entry.dataKey inScope:scope];
+                        if (!removed) {
+                            [filterReusedEntries addObject:entry];
+                            [[IntersectionObserverReuseManager shareInstance] removeReuseDataKey:entry.dataKey fromScope:scope];
+                        }
+                    }];
+                    [[IntersectionObserverReuseManager shareInstance] removeVisibleEntries:filterReusedEntries.copy fromScope:scope];
+                    if (containerOptions.callback && filterReusedEntries.count > 0) {
+                        containerOptions.callback(scope, filterReusedEntries);
+                    }
+                }
+            });
+        }
+        
         if (entries.count > 0) {
             if (delayReport) {
                 dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(containerOptions.intersectionDuration / 1000.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
@@ -185,7 +212,7 @@
     for (NSInteger i = 0; i < entries.count; i++) {
         IntersectionObserverEntry *oldEntry = entries[i];
         
-        // 这里不要判断 target 是否 visible
+        // 这里不要判断 targetView 是否 visible
         if (!oldEntry || !oldEntry.targetView) {
             continue;
         }
@@ -200,12 +227,17 @@
         CGFloat ratio = [[calcResult objectForKey:@"ratio"] doubleValue];
         CGRect viewportTargetRect = [[calcResult objectForKey:@"viewportTargetRect"] CGRectValue];
         CGRect intersectionRect = [[calcResult objectForKey:@"intersectionRect"] CGRectValue];
-        if (ratio < 0) continue;
+        
+        if (ratio < 0) {
+            continue;
+        }
         
         BOOL isInsecting = [self isInsectingWithRatio:ratio containerOptions:containerOptions targetOptions:options];
-        // BOOL isInsectingChanged = isInsecting == oldEntry.isInsecting && isInsecting != options.previousInsecting;
         BOOL canReport = [oldEntry.dataKey isEqualToString:options.dataKey] && isInsecting == oldEntry.isInsecting && ![[IntersectionObserverReuseManager shareInstance] isDataKeyVisible:options.dataKey inScope:scope];
-        if (!canReport) continue;
+        
+        if (!canReport) {
+            continue;
+        }
         
         IntersectionObserverEntry *entry =
             [IntersectionObserverEntry initEntryWithTargetView:targetView
@@ -243,24 +275,6 @@
             NSAssert(NO, @"no callback");
         }
     }
-    
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        if (reusedEntries.count > 0) {
-            NSMutableArray *filterReusedEntries = [[NSMutableArray alloc] init];
-            [reusedEntries enumerateObjectsUsingBlock:^(IntersectionObserverEntry * _Nonnull entry, NSUInteger idx, BOOL * _Nonnull stop) {
-                if (entry.targetView && entry.targetView.intersectionObserverTargetOptions) {
-                    NSString *curDataKey = entry.targetView.intersectionObserverTargetOptions.dataKey;
-                    if (![curDataKey isEqualToString:entry.dataKey]) {
-                        [filterReusedEntries addObject:entry];
-                    }
-                }
-            }];
-            [[IntersectionObserverReuseManager shareInstance] removeVisibleEntries:filterReusedEntries.copy fromScope:scope];
-            if (containerOptions.callback && filterReusedEntries.count > 0) {
-                containerOptions.callback(scope, filterReusedEntries);
-            }
-        }
-    });
 }
 
 + (NSDictionary *)calcRatioWithTargetView:(UIView *)targetView

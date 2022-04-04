@@ -14,6 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface IntersectionObserverReuseManager : NSObject
 
 @property(nonatomic, strong, readonly) NSMutableDictionary<NSString *, NSSet *> *visibleDataKeys;
+@property(nonatomic, strong, readonly) NSMutableSet<NSString *> *reusedDataKeys;
 
 + (instancetype)shareInstance;
 
@@ -23,6 +24,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)addVisibleEntries:(NSArray <IntersectionObserverEntry *> *)entries toScope:(NSString *)scope;
 - (void)removeVisibleEntries:(NSArray <IntersectionObserverEntry *> *)entries fromScope:(NSString *)scope;
+
+- (void)addReusedDataKey:(NSString *)dataKey toScope:(NSString *)scope;
+- (void)removeReuseDataKey:(NSString *)dataKey fromScope:(NSString *)scope;
+- (BOOL)isReusedDataKeyRemoved:(NSString *)dataKey inScope:(NSString *)scope;
 
 @end
 

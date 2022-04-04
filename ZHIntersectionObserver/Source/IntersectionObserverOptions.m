@@ -195,7 +195,7 @@
     self.data = data;
     if (self.targetView) {
         if (self.scope && self.scope.length > 0) {
-            NSLog(@"updateDataKey: targetView = %p, dataKey = %@, data = %@", self.targetView, self.dataKey, self.data);
+            NSLog(@"updateDataKey: view = %p, dataKey = %@", self.targetView, self.dataKey);
             [[IntersectionObserverManager shareInstance] emitObserverEventWithScope:self.scope forTargetView:self.targetView];
         }
     } else {
@@ -209,6 +209,7 @@
 
 - (void)dealloc {
     if (_dataKey && _dataKey.length > 0 && _scope && _scope.length > 0) {
+        [[IntersectionObserverReuseManager shareInstance] removeReuseDataKey:_dataKey fromScope:_scope];
         [[IntersectionObserverReuseManager shareInstance] removeVisibleDataKey:_dataKey fromScope:_scope];
     }
     NSLog(@"target dealloc");

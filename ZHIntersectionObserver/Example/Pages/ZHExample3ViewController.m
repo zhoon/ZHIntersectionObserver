@@ -131,7 +131,6 @@
     IntersectionObserverContainerOptions *containerOptions = [IntersectionObserverContainerOptions initOptionsWithScope:@"Example3" rootMargin:UIEdgeInsetsMake(CGRectGetMaxY(self.navigationController.navigationBar.frame), 0, 0, 0) thresholds:@[@1] containerView:self.view intersectionDuration:600 callback:^(NSString * _Nonnull scope, NSArray<IntersectionObserverEntry *> * _Nonnull entries) {
         
         __strong __typeof(weakSelf)strongSelf = weakSelf;
-        NSLog(@"Example3: entries = %@", entries);
         
         for (NSInteger i = 0; i < entries.count; i++) {
             IntersectionObserverEntry *entry = entries[i];
@@ -139,10 +138,12 @@
                 NSString *text = [NSString stringWithFormat:@"曝光: %@ ✓", [entry.data objectForKey:@"text"]];
                 NSLog(@"%@", text);
                 strongSelf.logLabel.text = [NSString stringWithFormat:@"%@\n%@", text, strongSelf.logLabel.text ?: @""];
+                NSLog(@"Example3: dataKey = %@, isInsecting = %@", entry.dataKey, @(entry.isInsecting));
             } else {
                 NSString *text = [NSString stringWithFormat:@"隐藏: %@ ✕", [entry.data objectForKey:@"text"]];
                 NSLog(@"%@", text);
                 strongSelf.logLabel.text = [NSString stringWithFormat:@"%@\n%@", text, strongSelf.logLabel.text ?: @""];
+                NSLog(@"Example3: dataKey = %@, isInsecting = %@", entry.dataKey, @(entry.isInsecting));
             }
         }
         
