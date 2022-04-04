@@ -29,7 +29,7 @@
 
 - (BOOL)isDataKeyVisible:(NSString *)dataKey inScope:(NSString *)scope {
     if (!dataKey || dataKey.length <= 0) {
-        NSLog(@"Warning: IntersectionObserverReuseManager no dataKey，当前如果不是复用的 view 可以不用管");
+        // NSLog(@"Warning: IntersectionObserverReuseManager no dataKey，当前如果不是复用的 view 可以不用管");
         return NO;
     }
     if (!scope || scope.length <= 0) {
@@ -42,7 +42,7 @@
 
 - (void)addVisibleDataKey:(NSString *)dataKey toScope:(NSString *)scope {
     if (!dataKey || dataKey.length <= 0) {
-        NSLog(@"Warning: IntersectionObserverReuseManager no dataKey，当前如果不是复用的 view 可以不用管");
+        // NSLog(@"Warning: IntersectionObserverReuseManager no dataKey，当前如果不是复用的 view 可以不用管");
         return;
     }
     if (!scope || scope.length <= 0) {
@@ -66,7 +66,7 @@
 
 - (void)removeVisibleDataKey:(NSString *)dataKey fromScope:(NSString *)scope {
     if (!dataKey || dataKey.length <= 0) {
-        NSLog(@"Warning: IntersectionObserverReuseManager no dataKey，当前如果不是复用的 view 可以不用管");
+        // NSLog(@"Warning: IntersectionObserverReuseManager no dataKey，当前如果不是复用的 view 可以不用管");
         return;
     }
     if (!scope || scope.length <= 0) {
@@ -131,14 +131,14 @@
 - (BOOL)isReusedDataKeyRemoved:(NSString *)dataKey inScope:(NSString *)scope {
     if (!dataKey || dataKey.length <= 0) {
         NSLog(@"Warning: IntersectionObserverReuseManager no dataKey");
-        return NO;
+        return YES;
     }
     if (!scope || scope.length <= 0) {
         NSAssert(NO, @"");
-        return NO;
+        return YES;
     }
     if (!self.reusedDataKeys || self.reusedDataKeys.count <= 0) {
-        return NO;
+        return YES;
     }
     NSString *key = [NSString stringWithFormat:@"%@_%@", scope, dataKey];
     BOOL removed = ![self.reusedDataKeys containsObject:key];

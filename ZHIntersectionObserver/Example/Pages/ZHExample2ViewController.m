@@ -14,6 +14,10 @@
 
 @implementation ZHExample2UITableViewCell
 
+- (void)dealloc {
+    NSLog(@"ZHExample2UITableViewCell dealloc");
+}
+
 @end
 
 @implementation ZHExample2ViewController
@@ -29,6 +33,12 @@
 
     self.view.backgroundColor = [UIColor whiteColor];
     self.tableView.rowHeight = 100;
+    
+    /*
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [self.tableView reloadData];
+    });
+    */
 }
 
 - (void)updateNavigationItem {
@@ -65,11 +75,10 @@
 
 - (void)initIntersectionObserver {
     IntersectionObserverContainerOptions *containerOptions = [IntersectionObserverContainerOptions initOptionsWithScope:@"Example2" rootMargin:UIEdgeInsetsMake(CGRectGetMaxY(self.navigationController.navigationBar.frame), 0, 0, 0) thresholds:@[@1] containerView:self.tableView intersectionDuration:self.isDelay ? 600 : 0 callback:^(NSString * _Nonnull scope, NSArray<IntersectionObserverEntry *> * _Nonnull entries) {
-        NSLog(@"Example2: entries = %@", entries);
         for (NSInteger i = 0; i < entries.count; i++) {
             IntersectionObserverEntry *entry = entries[i];
             ZHExample2UITableViewCell *cell = (ZHExample2UITableViewCell *)entry.targetView;
-            NSLog(@"zhoon entry, isInsecting = %@ index = %@", @(entry.isInsecting), entry.data[@"row"]);
+            NSLog(@"Example2 entry, isInsecting = %@ index = %@", @(entry.isInsecting), entry.data[@"row"]);
             if (cell) {
                 cell.backgroundColor = entry.isInsecting ? [[UIColor orangeColor] colorWithAlphaComponent:0.2] : [UIColor whiteColor];
             }

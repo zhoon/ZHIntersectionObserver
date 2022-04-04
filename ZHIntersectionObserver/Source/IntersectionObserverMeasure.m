@@ -125,7 +125,7 @@
                 } else {
                     [hideEntries addObject:entry];
                 }
-                if (!isInsecting || !delayReport) {
+                if (!delayReportEntry) {
                     options.previousInsecting = isInsecting;
                     options.previousFixedInsecting = isInsecting;
                     options.previousDataKey = options.dataKey;
@@ -156,20 +156,19 @@
         }
         
         if (reusedEntries.count > 0) {
+            // 0.2s 之后检查被复用的 view 的 dataKey 是否还是曝光状态
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                if (reusedEntries.count > 0) {
-                    NSMutableArray *filterReusedEntries = [[NSMutableArray alloc] init];
-                    [reusedEntries enumerateObjectsUsingBlock:^(IntersectionObserverEntry * _Nonnull entry, NSUInteger idx, BOOL * _Nonnull stop) {
-                        BOOL removed = [[IntersectionObserverReuseManager shareInstance] isReusedDataKeyRemoved:entry.dataKey inScope:scope];
-                        if (!removed) {
-                            [filterReusedEntries addObject:entry];
-                            [[IntersectionObserverReuseManager shareInstance] removeReuseDataKey:entry.dataKey fromScope:scope];
-                        }
-                    }];
-                    [[IntersectionObserverReuseManager shareInstance] removeVisibleEntries:filterReusedEntries.copy fromScope:scope];
-                    if (containerOptions.callback && filterReusedEntries.count > 0) {
-                        containerOptions.callback(scope, filterReusedEntries);
+                NSMutableArray *filterReusedEntries = [[NSMutableArray alloc] init];
+                [reusedEntries enumerateObjectsUsingBlock:^(IntersectionObserverEntry * _Nonnull entry, NSUInteger idx, BOOL * _Nonnull stop) {
+                    BOOL removed = [[IntersectionObserverReuseManager shareInstance] isReusedDataKeyRemoved:entry.dataKey inScope:scope];
+                    if (!removed) {
+                        [filterReusedEntries addObject:entry];
+                        [[IntersectionObserverReuseManager shareInstance] removeReuseDataKey:entry.dataKey fromScope:scope];
                     }
+                }];
+                [[IntersectionObserverReuseManager shareInstance] removeVisibleEntries:filterReusedEntries.copy fromScope:scope];
+                if (containerOptions.callback && filterReusedEntries.count > 0) {
+                    containerOptions.callback(scope, filterReusedEntries);
                 }
             });
         }
@@ -177,7 +176,7 @@
         if (entries.count > 0) {
             if (delayReport) {
                 dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(containerOptions.intersectionDuration / 1000.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                    [self delayMeasureWithObserver:observer entries:entries.copy reusedEntries:reusedEntries.copy];
+                    [self delayMeasureWithObserver:observer entries:entries.copy];
                 });
             } else {
                 [[IntersectionObserverReuseManager shareInstance] addVisibleEntries:entries.copy toScope:scope];
@@ -193,8 +192,7 @@
 }
 
 + (void)delayMeasureWithObserver:(IntersectionObserver *)observer
-                         entries:(NSArray <IntersectionObserverEntry *> *)entries
-                   reusedEntries:(NSArray <IntersectionObserverEntry *> *)reusedEntries {
+                         entries:(NSArray <IntersectionObserverEntry *> *)entries {
     
     // 简单判断下当前 options 和 entries
     IntersectionObserverContainerOptions *containerOptions = observer.containerOptions;
@@ -233,7 +231,8 @@
         }
         
         BOOL isInsecting = [self isInsectingWithRatio:ratio containerOptions:containerOptions targetOptions:options];
-        BOOL canReport = [oldEntry.dataKey isEqualToString:options.dataKey] && isInsecting == oldEntry.isInsecting && ![[IntersectionObserverReuseManager shareInstance] isDataKeyVisible:options.dataKey inScope:scope];
+        BOOL isDataKeyVisible = [[IntersectionObserverReuseManager shareInstance] isDataKeyVisible:options.dataKey inScope:scope];
+        BOOL canReport = [oldEntry.dataKey isEqualToString:options.dataKey] && isInsecting == oldEntry.isInsecting && !isDataKeyVisible;
         
         if (!canReport) {
             continue;
@@ -317,20 +316,26 @@
     
     BOOL isInsecting = [self isInsectingWithRatio:ratio containerOptions:containerOptions targetOptions:targetOptions];
     
+    BOOL isDataKeyVisible = targetOptions.dataKey ? [[IntersectionObserverReuseManager shareInstance] isDataKeyVisible:targetOptions.dataKey inScope:containerOptions.scope] : NO;
+    
     // 生命周期发生变化
     if (containerOptions.measureWhenAppStateChanged) {
         UIApplicationState prevApplicationState = [IntersectionObserverManager shareInstance].previousApplicationState;
-        if (prevApplicationState != UIApplicationStateActive && UIApplication.sharedApplication.applicationState == UIApplicationStateActive) {
-            return ![[IntersectionObserverReuseManager shareInstance] isDataKeyVisible:targetOptions.dataKey inScope:containerOptions.scope];
-            // return isInsecting != targetOptions.previousInsecting;
+        if (prevApplicationState != UIApplicationStateActive &&
+            UIApplication.sharedApplication.applicationState == UIApplicationStateActive) {
+            // TODO: 先直接返回 YES，这样导致那些那些一开始没曝光的 item 会发送多 isInsecting = NO 的通知
+            // TODO: 如果改为 isInsecting != targetOptions.previousInsecting 会导致 cell 不复用的情况切换前后台无法触发事件
+            return YES; // isInsecting != targetOptions.previousInsecting;
         }
-        if (prevApplicationState != UIApplicationStateBackground && UIApplication.sharedApplication.applicationState == UIApplicationStateBackground) {
-            return ![[IntersectionObserverReuseManager shareInstance] isDataKeyVisible:targetOptions.dataKey inScope:containerOptions.scope];
-            // return isInsecting != targetOptions.previousInsecting;
+        if (prevApplicationState != UIApplicationStateBackground &&
+            UIApplication.sharedApplication.applicationState == UIApplicationStateBackground) {
+            // TODO: 先直接返回 YES，这样导致那些那些一开始没曝光的 item 会发送多 isInsecting = NO 的通知
+            // TODO: 如果改为 isInsecting != targetOptions.previousInsecting 会导致 cell 不复用的情况切换前后台无法触发事件
+            return YES; // isInsecting != targetOptions.previousInsecting;
         }
     }
     
-    // 可视状态发生变化
+    // TODO: 可视状态发生变化
     /*
     if (containerOptions.measureWhenVisibilityChanged) {
         BOOL targetViewVisible = [self isTargetViewVisible:targetOptions.targetView inContainerView:containerOptions.containerView];
@@ -338,19 +343,14 @@
         if (targetViewVisible != targetOptions.previousVisible || containerViewVisible != containerOptions.previousVisible) {
             return isInsecting != targetOptions.previousInsecting;
         }
-    }
-    */
+    }*/
     
     // 数据发生变化（或者复用）
     if (targetOptions.dataKey && targetOptions.dataKey.length > 0 && ![targetOptions.dataKey isEqualToString:targetOptions.previousDataKey]) {
-        BOOL inVisiblePool = [[IntersectionObserverReuseManager shareInstance] isDataKeyVisible:targetOptions.dataKey inScope:containerOptions.scope];
-        if ([targetOptions.dataKey isEqualToString:@"7"]) {
-            NSLog(@"");
-        }
         if (isInsecting) {
-            return !inVisiblePool;
+            return !isDataKeyVisible;
         } else {
-            return inVisiblePool;
+            return isDataKeyVisible;
         }
     }
     
@@ -372,15 +372,15 @@
 }
 
 + (BOOL)isTargetViewVisible:(UIView *)targetView inContainerView:(UIView *)containerView {
-    // 这里先不要做 hidden 这个判断了，有些场景例如 cell 复用，cell 会临时被 hidden 掉，所以先去掉这个逻辑
+    // TODO: 这里先不要做 hidden 这个判断了，有些场景例如 cell 复用，cell 会临时被 hidden 掉，所以先去掉这个逻辑
     // BOOL flag = targetView.hidden || targetView.alpha <= 0 || !targetView.window;
-    BOOL flag = targetView.alpha <= 0 || !targetView.window;
+    BOOL flag = !targetView.window;
     if (flag) return NO;
     BOOL visible = YES;
     while (targetView.superview && targetView.superview != containerView) {
         targetView = targetView.superview;
         // flag = targetView.hidden || targetView.alpha <= 0 || !targetView.window;
-        flag = targetView.alpha <= 0 || !targetView.window;
+        flag = !targetView.window;
         if (flag) {
             visible = NO;
             break;

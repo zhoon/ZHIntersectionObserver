@@ -8,6 +8,7 @@
 #import "IntersectionObserver.h"
 #import "IntersectionObserverOptions.h"
 #import "IntersectionObserverMeasure.h"
+#import "UIView+IntersectionObserver.h"
 
 @implementation IntersectionObserver
 
@@ -29,7 +30,7 @@
 
 - (BOOL)addTargetOptions:(UIView *)target options:(IntersectionObserverTargetOptions *)options {
     if (target && options) {
-        if ([self isTargetExisted:target]) {
+        if ([self isTargetViewExisted:target]) {
             IntersectionObserverTargetOptions *oldOptions = [self.targetOptions objectForKey:target];
             BOOL isSameOptions = [IntersectionObserverMeasure isTargetOptions:options sameWithOptions:oldOptions];
             if (isSameOptions) {
@@ -39,6 +40,11 @@
                 return YES;
             }
         } else {
+            // view 不复用，但是 dataKey 一样，这个时候需要移除旧的 options
+            UIView *existTarget = [self isTargetDataKeyExisted:options.dataKey];
+            if (existTarget && target != existTarget) {
+                [self.targetOptions removeObjectForKey:existTarget];
+            }
             [self.targetOptions setObject:options forKey:target];
             return YES;
         }
@@ -50,7 +56,7 @@
 
 - (BOOL)removeTargetOptions:(UIView *)target {
     if (target) {
-        if ([self isTargetExisted:target]) {
+        if ([self isTargetViewExisted:target]) {
             [self.targetOptions removeObjectForKey:target];
             return YES;
         } else {
@@ -62,7 +68,7 @@
     }
 }
 
-- (BOOL)isTargetExisted:(UIView *)target {
+- (BOOL)isTargetViewExisted:(UIView *)target {
     NSEnumerator<UIView *> *targets = self.targetOptions.keyEnumerator;
     BOOL exist = NO;
     for (UIView *aTarget in targets) {
@@ -72,6 +78,22 @@
         }
     }
     return exist;
+}
+
+- (UIView *)isTargetDataKeyExisted:(NSString *)dataKey {
+    if (!dataKey || dataKey.length <= 0) {
+        return nil;
+    }
+    NSEnumerator<UIView *> *targets = self.targetOptions.keyEnumerator;
+    UIView *view = nil;
+    for (UIView *aTarget in targets) {
+        IntersectionObserverTargetOptions *options = [self.targetOptions objectForKey:aTarget];
+        if ([dataKey isEqualToString:options.dataKey]) {
+            view = aTarget;
+            break;
+        }
+    }
+    return view;
 }
 
 - (NSString *)description {

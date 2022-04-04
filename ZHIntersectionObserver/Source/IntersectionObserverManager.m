@@ -58,7 +58,12 @@
             [self checkObserverWithScope:scope forTargetView:nil];
         }
     }
-    self.previousApplicationState = UIApplicationStateActive;
+    // 延迟设置
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        if (UIApplication.sharedApplication.applicationState == UIApplicationStateActive) {
+            self.previousApplicationState = UIApplicationStateActive;
+        }
+    });
 }
 
 - (void)handleDidEnterBackgroundNotification:(NSNotification *)notification {
@@ -77,7 +82,12 @@
             [self checkObserverWithScope:scope forTargetView:nil];
         }
     }
-    self.previousApplicationState = UIApplicationStateBackground;
+    // 延迟设置
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        if (UIApplication.sharedApplication.applicationState == UIApplicationStateBackground) {
+            self.previousApplicationState = UIApplicationStateBackground;
+        }
+    });
 }
 
 - (void)emitObserverEventWithScope:(NSString *)scope {

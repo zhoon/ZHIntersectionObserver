@@ -190,6 +190,9 @@
     if (self.changingSize) {
         return;
     }
+    if (UIApplication.sharedApplication.applicationState != UIApplicationStateActive) {
+        return;
+    }
     self.containerView.frame = self.view.bounds;
     self.targetView.frame = CGRectMake(0, 0, 250, 250);
     self.targetView.center = self.containerView.center;

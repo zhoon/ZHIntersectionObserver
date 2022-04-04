@@ -247,16 +247,28 @@ static char kAssociatedObjectKey_intersectionObserverTargetOptions;
                 [_view handleViewVisibilityChangedEventForTargetView:_view.intersectionObserverTargetOptions ? _view : nil];
             }
         }
+        /*
         if ([keyPath isEqualToString:@"alpha"] && _view.intersectionObserverContainerOptions.measureWhenVisibilityChanged) {
             if ([change[NSKeyValueChangeOldKey] doubleValue] != [change[NSKeyValueChangeNewKey] doubleValue]) {
-                [_view handleViewVisibilityChangedEventForTargetView:_view.intersectionObserverTargetOptions ? _view : nil];
+                // 延迟设置
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                    if (self->_view.alpha == [change[NSKeyValueChangeNewKey] doubleValue]) {
+                        [self->_view handleViewVisibilityChangedEventForTargetView:self->_view.intersectionObserverTargetOptions ? self->_view : nil];
+                    }
+                });
             }
         }
         if ([keyPath isEqualToString:@"hidden"] && _view.intersectionObserverContainerOptions.measureWhenVisibilityChanged) {
             if ([change[NSKeyValueChangeOldKey] boolValue] != [change[NSKeyValueChangeNewKey] boolValue]) {
-                [_view handleViewVisibilityChangedEventForTargetView:_view.intersectionObserverTargetOptions ? _view : nil];
+                // 延迟设置
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                    if (self->_view.hidden == [change[NSKeyValueChangeNewKey] boolValue]) {
+                        [self->_view handleViewVisibilityChangedEventForTargetView:self->_view.intersectionObserverTargetOptions ? self->_view : nil];
+                    }
+                });
             }
         }
+        */
     }
 }
 
