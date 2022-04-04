@@ -16,19 +16,19 @@
 
 @interface IntersectionObserverContainerOptions (Utils)
 
-@property(nonatomic, assign) BOOL previousVisible;
+@property(nonatomic, assign) BOOL preVisible;
 
 @end
 
 
 @interface IntersectionObserverTargetOptions (Utils)
 
-@property(nonatomic, assign) CGFloat previousRatio;
-@property(nonatomic, assign) BOOL previousInsecting;
-@property(nonatomic, assign) BOOL previousVisible;
-@property(nonatomic, copy) NSString *previousDataKey;
-@property(nonatomic, copy) NSDictionary *previousData;
-@property(nonatomic, assign) BOOL previousFixedInsecting;
+@property(nonatomic, assign) CGFloat preRatio;
+@property(nonatomic, assign) BOOL preInsecting;
+@property(nonatomic, assign) BOOL preVisible;
+@property(nonatomic, copy) NSString *preDataKey;
+@property(nonatomic, copy) NSDictionary *preData;
+@property(nonatomic, assign) BOOL preReuseInsecting;
 
 @end
 
@@ -77,22 +77,27 @@
             CGFloat ratio = [[calcResult objectForKey:@"ratio"] doubleValue];
             CGRect viewportTargetRect = [[calcResult objectForKey:@"viewportTargetRect"] CGRectValue];
             CGRect intersectionRect = [[calcResult objectForKey:@"intersectionRect"] CGRectValue];
-            if (ratio < 0) continue;
             
-            // previousFixedInsecting 是为了一个 view 被复用很多次都没有曝光的情况下，会一直发送 isInsecting = NO 的事件，例如 delayReport 并且快速滚动的时候
-            if (options.dataKey && options.dataKey.length > 0 && ![options.dataKey isEqualToString:options.previousDataKey] &&
-                options.previousInsecting && options.previousFixedInsecting) {
+            if (ratio < 0) {
+                continue;
+            }
+            
+            // preReuseInsecting 是为了结局一个 view 被复用很多次都没有曝光的情况下，会一直发送 isInsecting = NO 的事件，例如 delayReport 并且快速滚动的时候
+            if (options.dataKey && options.dataKey.length > 0 &&
+                ![options.dataKey isEqualToString:options.preDataKey] &&
+                options.preInsecting &&
+                options.preReuseInsecting) {
                 IntersectionObserverEntry *entry =
                     [IntersectionObserverEntry initEntryWithTargetView:curTargetView
-                                                               dataKey:options.previousDataKey
-                                                                  data:options.previousData
+                                                               dataKey:options.preDataKey
+                                                                  data:options.preData
                                                     boundingClientRect:viewportTargetRect
                                                      intersectionRatio:ratio
                                                       intersectionRect:intersectionRect
                                                            isInsecting:NO
                                                             rootBounds:containerView.bounds
                                                                   time:floor([NSDate date].timeIntervalSince1970 * 1000)];
-                options.previousFixedInsecting = NO;
+                options.preReuseInsecting = NO;
                 [reusedEntries addObject:entry];
                 [[IntersectionObserverReuseManager shareInstance] addReusedDataKey:entry.dataKey toScope:scope];
             }
@@ -125,25 +130,27 @@
                     [hideEntries addObject:entry];
                 }
                 if (!delayReportEntry) {
-                    options.previousInsecting = isInsecting;
-                    options.previousFixedInsecting = isInsecting;
-                    options.previousDataKey = options.dataKey;
-                    options.previousData = options.data;
+                    // 更新各种 pre 值
+                    options.preInsecting = isInsecting;
+                    options.preReuseInsecting = isInsecting;
+                    options.preDataKey = options.dataKey;
+                    options.preData = options.data;
                     if (containerOptions.measureWhenVisibilityChanged) {
-                        options.previousVisible = [self isTargetViewVisible:curTargetView inContainerView:containerView];
+                        options.preVisible = [self isTargetViewVisible:curTargetView inContainerView:containerView];
                     }
                 }
             }
             
-            // 非 canReport 也要更新
+            // 非 canReport 也要更新 preRatio
             if (!delayReportEntry) {
-                options.previousRatio = ratio;
+                options.preRatio = ratio;
             }
         }
         
+        // 更新 pre 值
         if (!delayReport) {
             if (containerOptions.measureWhenVisibilityChanged) {
-                containerOptions.previousVisible = [self isContainerViewVisible:containerView];
+                containerOptions.preVisible = [self isContainerViewVisible:containerView];
             }
         }
         
@@ -249,20 +256,19 @@
                                                           time:floor([NSDate date].timeIntervalSince1970 * 1000)];
         [filterEntries addObject:entry];
         
-        options.previousInsecting = isInsecting;
-        options.previousFixedInsecting = isInsecting;
-        options.previousDataKey = options.dataKey;
-        options.previousData = options.data;
+        options.preRatio = ratio;
+        options.preInsecting = isInsecting;
+        options.preReuseInsecting = isInsecting;
+        options.preDataKey = options.dataKey;
+        options.preData = options.data;
         
         if (containerOptions.measureWhenVisibilityChanged) {
-            options.previousVisible = [self isTargetViewVisible:targetView inContainerView:containerView];
+            options.preVisible = [self isTargetViewVisible:targetView inContainerView:containerView];
         }
-        
-        options.previousRatio = ratio;
     }
     
     if (containerOptions.measureWhenVisibilityChanged) {
-        containerOptions.previousVisible = [self isContainerViewVisible:containerView];
+        containerOptions.preVisible = [self isContainerViewVisible:containerView];
     }
     
     if (filterEntries.count > 0) {
@@ -323,14 +329,14 @@
         if (prevApplicationState != UIApplicationStateActive &&
             UIApplication.sharedApplication.applicationState == UIApplicationStateActive) {
             // TODO: 先直接返回 YES，这样导致那些那些一开始没曝光的 item 会发送多 isInsecting = NO 的通知
-            // TODO: 如果改为 isInsecting != targetOptions.previousInsecting 会导致 cell 不复用的情况切换前后台无法触发事件
-            return YES; // isInsecting != targetOptions.previousInsecting;
+            // TODO: 如果改为 isInsecting != targetOptions.preInsecting 会导致 cell 不复用的情况切换前后台无法触发事件
+            return YES; // isInsecting != targetOptions.preInsecting;
         }
         if (prevApplicationState != UIApplicationStateBackground &&
             UIApplication.sharedApplication.applicationState == UIApplicationStateBackground) {
             // TODO: 先直接返回 YES，这样导致那些那些一开始没曝光的 item 会发送多 isInsecting = NO 的通知
-            // TODO: 如果改为 isInsecting != targetOptions.previousInsecting 会导致 cell 不复用的情况切换前后台无法触发事件
-            return YES; // isInsecting != targetOptions.previousInsecting;
+            // TODO: 如果改为 isInsecting != targetOptions.preInsecting 会导致 cell 不复用的情况切换前后台无法触发事件
+            return YES; // isInsecting != targetOptions.preInsecting;
         }
     }
     
@@ -339,13 +345,13 @@
     if (containerOptions.measureWhenVisibilityChanged) {
         BOOL targetViewVisible = [self isTargetViewVisible:targetOptions.targetView inContainerView:containerOptions.containerView];
         BOOL containerViewVisible = [self isContainerViewVisible:containerOptions.containerView];
-        if (targetViewVisible != targetOptions.previousVisible || containerViewVisible != containerOptions.previousVisible) {
-            return isInsecting != targetOptions.previousInsecting;
+        if (targetViewVisible != targetOptions.preVisible || containerViewVisible != containerOptions.preVisible) {
+            return isInsecting != targetOptions.preInsecting;
         }
     }*/
     
     // 数据发生变化（或者复用）
-    if (targetOptions.dataKey && targetOptions.dataKey.length > 0 && ![targetOptions.dataKey isEqualToString:targetOptions.previousDataKey]) {
+    if (targetOptions.dataKey && targetOptions.dataKey.length > 0 && ![targetOptions.dataKey isEqualToString:targetOptions.preDataKey]) {
         if (isInsecting) {
             return !isDataKeyVisible;
         } else {
@@ -355,12 +361,12 @@
     
     // 前后 ratio 变化
     if ([self isInsectingWithRatio:ratio containerOptions:containerOptions targetOptions:targetOptions] !=
-        [self isInsectingWithRatio:targetOptions.previousRatio containerOptions:containerOptions targetOptions:targetOptions]) {
+        [self isInsectingWithRatio:targetOptions.preRatio containerOptions:containerOptions targetOptions:targetOptions]) {
         return YES;
     }
     
     // 是否达到某个 ratio
-    return [self lastMatchThreshold:containerOptions.thresholds ratio:ratio] != [self lastMatchThreshold:containerOptions.thresholds ratio:targetOptions.previousRatio];
+    return [self lastMatchThreshold:containerOptions.thresholds ratio:ratio] != [self lastMatchThreshold:containerOptions.thresholds ratio:targetOptions.preRatio];
 }
 
 + (BOOL)isContainerViewVisible:(UIView *)containerView {
@@ -457,76 +463,76 @@
 @end
 
 
-static char kAssociatedObjectKey_UtilsContainerPreviousVisible;
+static char kAssociatedObjectKey_UtilsContainerPreVisible;
 
 @implementation IntersectionObserverContainerOptions (Utils)
 
-- (void)setPreviousVisible:(BOOL)previousVisible {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_UtilsContainerPreviousVisible, @(previousVisible), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+- (void)setPreVisible:(BOOL)preVisible {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_UtilsContainerPreVisible, @(preVisible), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
-- (BOOL)previousVisible {
-    return [objc_getAssociatedObject(self, &kAssociatedObjectKey_UtilsContainerPreviousVisible) boolValue];
+- (BOOL)preVisible {
+    return [objc_getAssociatedObject(self, &kAssociatedObjectKey_UtilsContainerPreVisible) boolValue];
 }
 
 @end
 
 
-static char kAssociatedObjectKey_UtilsPreviousRatio;
-static char kAssociatedObjectKey_UtilsPreviousInsecting;
-static char kAssociatedObjectKey_UtilsPreviousFixedInsecting;
-static char kAssociatedObjectKey_UtilsPreviousVisible;
-static char kAssociatedObjectKey_UtilsPreviousDataKey;
-static char kAssociatedObjectKey_UtilsPreviousData;
+static char kAssociatedObjectKey_UtilsPreRatio;
+static char kAssociatedObjectKey_UtilsPreInsecting;
+static char kAssociatedObjectKey_UtilsPreReuseInsecting;
+static char kAssociatedObjectKey_UtilsPreVisible;
+static char kAssociatedObjectKey_UtilsPreDataKey;
+static char kAssociatedObjectKey_UtilsPreData;
 
 @implementation IntersectionObserverTargetOptions (Utils)
 
-- (void)setPreviousRatio:(CGFloat)previousRatio {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_UtilsPreviousRatio, @(previousRatio), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+- (void)setPreRatio:(CGFloat)preRatio {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_UtilsPreRatio, @(preRatio), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
-- (CGFloat)previousRatio {
-    return [objc_getAssociatedObject(self, &kAssociatedObjectKey_UtilsPreviousRatio) doubleValue];
+- (CGFloat)preRatio {
+    return [objc_getAssociatedObject(self, &kAssociatedObjectKey_UtilsPreRatio) doubleValue];
 }
 
-- (void)setPreviousInsecting:(BOOL)previousInsecting {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_UtilsPreviousInsecting, @(previousInsecting), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+- (void)setPreInsecting:(BOOL)preInsecting {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_UtilsPreInsecting, @(preInsecting), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
-- (BOOL)previousInsecting {
-    return [objc_getAssociatedObject(self, &kAssociatedObjectKey_UtilsPreviousInsecting) boolValue];
+- (BOOL)preInsecting {
+    return [objc_getAssociatedObject(self, &kAssociatedObjectKey_UtilsPreInsecting) boolValue];
 }
 
-- (void)setPreviousFixedInsecting:(BOOL)previousFixedInsecting {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_UtilsPreviousFixedInsecting, @(previousFixedInsecting), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+- (void)setPreReuseInsecting:(BOOL)preReuseInsecting {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_UtilsPreReuseInsecting, @(preReuseInsecting), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
-- (BOOL)previousFixedInsecting {
-    return [objc_getAssociatedObject(self, &kAssociatedObjectKey_UtilsPreviousFixedInsecting) boolValue];
+- (BOOL)preReuseInsecting {
+    return [objc_getAssociatedObject(self, &kAssociatedObjectKey_UtilsPreReuseInsecting) boolValue];
 }
 
-- (void)setPreviousVisible:(BOOL)previousVisible {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_UtilsPreviousVisible, @(previousVisible), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+- (void)setPreVisible:(BOOL)preVisible {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_UtilsPreVisible, @(preVisible), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
-- (BOOL)previousVisible {
-    return [objc_getAssociatedObject(self, &kAssociatedObjectKey_UtilsPreviousVisible) boolValue];
+- (BOOL)preVisible {
+    return [objc_getAssociatedObject(self, &kAssociatedObjectKey_UtilsPreVisible) boolValue];
 }
 
-- (void)setPreviousDataKey:(NSString *)previousDataKey {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_UtilsPreviousDataKey, previousDataKey, OBJC_ASSOCIATION_COPY_NONATOMIC);
+- (void)setPreDataKey:(NSString *)preDataKey {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_UtilsPreDataKey, preDataKey, OBJC_ASSOCIATION_COPY_NONATOMIC);
 }
 
-- (NSString *)previousDataKey {
-    return objc_getAssociatedObject(self, &kAssociatedObjectKey_UtilsPreviousDataKey);
+- (NSString *)preDataKey {
+    return objc_getAssociatedObject(self, &kAssociatedObjectKey_UtilsPreDataKey);
 }
 
-- (void)setPreviousData:(NSDictionary *)previousData {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_UtilsPreviousData, previousData, OBJC_ASSOCIATION_COPY_NONATOMIC);
+- (void)setPreData:(NSDictionary *)preData {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_UtilsPreData, preData, OBJC_ASSOCIATION_COPY_NONATOMIC);
 }
 
-- (NSDictionary *)previousData {
-    return objc_getAssociatedObject(self, &kAssociatedObjectKey_UtilsPreviousData);
+- (NSDictionary *)preData {
+    return objc_getAssociatedObject(self, &kAssociatedObjectKey_UtilsPreData);
 }
 
 @end
