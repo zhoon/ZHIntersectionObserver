@@ -40,8 +40,7 @@
 }
 
 + (void)measureWithObserver:(IntersectionObserver *)observer forTargetView:(UIView * __nullable)targetView {
-    // updateDataKey 调用后马上开始重新计算，但是这个时候如果是复用的 view 例如 cell，如果复用前和复用后位置不一样，那么在计算 isInsecting 的时候可能会错误
-    // 假设被复用的 view 在复用前是在屏幕外，那么复用的时候计算出来的 isInsecting 就是在屏幕外的，所以需要等待 view 重新布局之后再计算，通过 dispatch_async 使得计算再下个 runloop 再触发
+    // updateDataKey 调用后马上开始重新计算，但是这个时候如果是复用的 view 例如 cell，如果复用前和复用后位置不一样，那么在计算 isInsecting 的时候可能会错误。例如被复用的 view 在复用前是在屏幕外，那么复用的时候计算出来的 isInsecting 就是在屏幕外的，所以需要等待 view 重新布局之后再计算，通过 dispatch_async 使得计算再下个 runloop 再触发
     dispatch_async(dispatch_get_main_queue(), ^{
         
         // 判断是否有 containerOptions
