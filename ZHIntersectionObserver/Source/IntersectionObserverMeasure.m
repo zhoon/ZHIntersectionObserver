@@ -347,7 +347,7 @@
         BOOL targetViewVisible = [self isTargetViewVisible:targetOptions.targetView inContainerView:containerOptions.containerView];
         BOOL containerViewVisible = [self isContainerViewVisible:containerOptions.containerView];
         if (targetViewVisible != targetOptions.preVisible || containerViewVisible != containerOptions.preVisible) {
-            return isInsecting != targetOptions.preInsecting && ![[IntersectionObserverReuseManager shareInstance] isDataKeyVisible:targetOptions.dataKey inScope:containerOptions.scope];
+            return isInsecting != targetOptions.preInsecting;
         }
     }
     
