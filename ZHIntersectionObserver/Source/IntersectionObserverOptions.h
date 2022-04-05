@@ -26,10 +26,10 @@ NS_ASSUME_NONNULL_BEGIN
 /// 节流参数，频率限制，默认 100 ms。需要搭配 intersectionDuration 一起使用，不宜设置太大，否则 intersectionDuration 效果会不明显。
 @property(nonatomic, assign, readonly) NSTimeInterval throttle;
 
-/// measure when appState changed, default YES.
+/// appState 发生变化是否重新检测曝光，默认 YES。这个属性只有当设置了 dataKey 才会生效。
 @property(nonatomic, assign, readonly) BOOL measureWhenAppStateChanged;
 
-/// measure when containerView visibility changed, default YES.
+/// 可视状态发生变化是否重新检测曝光， 默认 YES。这个属性只有当设置了 dataKey 才会生效。
 @property(nonatomic, assign, readonly) BOOL measureWhenVisibilityChanged;
 
 /// 触发 intersection 事件之后经过 duration 时长再检查一次如果两次结果一样，才会 callback 给业务。可以理解为曝光时长，用于解决快速滚动或者本地数据被网络数据覆盖的场景，默认为 600 ms

@@ -27,6 +27,10 @@ NS_ASSUME_NONNULL_BEGIN
 + (BOOL)isTargetOptions:(IntersectionObserverTargetOptions *)options1
         sameWithOptions:(IntersectionObserverTargetOptions *)options2;
 
+/// 更新 view 不复用但是 dataKey 相同的场景下的 options，对齐其 preXXX 属性，避免判断错误
++ (void)updateOptionsPreProperties:(IntersectionObserverTargetOptions *)options
+                    fromOldOptions:(IntersectionObserverTargetOptions *)oldOptions;
+
 @end
 
 

@@ -19,7 +19,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor whiteColor];
-    self.tableView.rowHeight = 80;
+    self.tableView.rowHeight = 96;
     self.title = @"ZHIntersectionObsever";
 }
 
@@ -42,7 +42,7 @@
     cell.detailTextLabel.numberOfLines = 0;
     
     if (indexPath.row == 0) {
-        cell.textLabel.text = @"基础功能体验";
+        cell.textLabel.text = @"基础功能体验 - 1";
         cell.detailTextLabel.text = @"设置和更新容器大小，设置曝光临界点，动态检测曝光";
     }
     

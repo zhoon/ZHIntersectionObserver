@@ -324,31 +324,32 @@
     BOOL isDataKeyVisible = targetOptions.dataKey ? [[IntersectionObserverReuseManager shareInstance] isDataKeyVisible:targetOptions.dataKey inScope:containerOptions.scope] : NO;
     
     // 生命周期发生变化
-    if (containerOptions.measureWhenAppStateChanged) {
+    if (containerOptions.measureWhenAppStateChanged && targetOptions.dataKey) {
         UIApplicationState prevApplicationState = [IntersectionObserverManager shareInstance].previousApplicationState;
         if (prevApplicationState != UIApplicationStateActive &&
             UIApplication.sharedApplication.applicationState == UIApplicationStateActive) {
-            // TODO: 先直接返回 YES，这样导致那些那些一开始没曝光的 item 会发送多 isInsecting = NO 的通知
-            // TODO: 如果改为 isInsecting != targetOptions.preInsecting 会导致 cell 不复用的情况切换前后台无法触发事件
-            return YES; // isInsecting != targetOptions.preInsecting;
+            // 重新计算，只要是 isInsecting 即可发送事件。如果没有设置 dataKey，回到前台会多发送一次曝光事件，所以屏蔽一下。
+            if (targetOptions.dataKey) {
+                return isInsecting;
+            }
+            return NO;
         }
         if (prevApplicationState != UIApplicationStateBackground &&
             UIApplication.sharedApplication.applicationState == UIApplicationStateBackground) {
-            // TODO: 先直接返回 YES，这样导致那些那些一开始没曝光的 item 会发送多 isInsecting = NO 的通知
-            // TODO: 如果改为 isInsecting != targetOptions.preInsecting 会导致 cell 不复用的情况切换前后台无法触发事件
-            return YES; // isInsecting != targetOptions.preInsecting;
+            // 直接返回 YES 会导致那些那些一开始没曝光的 item 会发送多 isInsecting = NO 的通知
+            // 如果改为 isInsecting != targetOptions.preInsecting 会导致 cell 不复用的情况切换前后台无法触发事件，所以需要通过 updateOptionsPreProperties:fromOldOptions 同步一下 options，但是还是会存在之前非曝光过的被复用到曝光的时候，isInsecting != targetOptions.preInsecting 为 NO（isInsecting 必定为 NO，没曝光的 item 的 targetOptions.preInsecting 也是 NO），导致当前没有发送 isInsecting = NO 事件，所以最后改成 isDataKeyVisible，但是要求设置 dataKey 才能生效。
+            return [[IntersectionObserverReuseManager shareInstance] isDataKeyVisible:targetOptions.dataKey inScope:containerOptions.scope];
         }
     }
     
-    // TODO: 可视状态发生变化
-    /*
-    if (containerOptions.measureWhenVisibilityChanged) {
+    // 可视状态发生变化
+    if (containerOptions.measureWhenVisibilityChanged && targetOptions.dataKey) {
         BOOL targetViewVisible = [self isTargetViewVisible:targetOptions.targetView inContainerView:containerOptions.containerView];
         BOOL containerViewVisible = [self isContainerViewVisible:containerOptions.containerView];
         if (targetViewVisible != targetOptions.preVisible || containerViewVisible != containerOptions.preVisible) {
-            return isInsecting != targetOptions.preInsecting;
+            return isInsecting != targetOptions.preInsecting && ![[IntersectionObserverReuseManager shareInstance] isDataKeyVisible:targetOptions.dataKey inScope:containerOptions.scope];
         }
-    }*/
+    }
     
     // 数据发生变化（或者复用）
     if (targetOptions.dataKey && targetOptions.dataKey.length > 0 && ![targetOptions.dataKey isEqualToString:targetOptions.preDataKey]) {
@@ -458,6 +459,19 @@
     BOOL isCGRectNaN = isnan(rect.origin.x) || isnan(rect.origin.y) || isnan(rect.size.width) || isnan(rect.size.height);
     BOOL isCGRectInf = isinf(rect.origin.x) || isinf(rect.origin.y) || isinf(rect.size.width) || isinf(rect.size.height);
     return !CGRectIsNull(rect) && !CGRectIsInfinite(rect) && !isCGRectNaN && !isCGRectInf;
+}
+
++ (void)updateOptionsPreProperties:(IntersectionObserverTargetOptions *)options
+                    fromOldOptions:(IntersectionObserverTargetOptions *)oldOptions {
+    if (options && oldOptions) {
+        options.preRatio = oldOptions.preRatio;
+        options.preInsecting = oldOptions.preInsecting;
+        options.preVisible = oldOptions.preVisible;
+        options.preDataKey = oldOptions.preDataKey;
+        options.preData = oldOptions.preData;
+        options.preDataKey = oldOptions.preDataKey;
+        options.preReuseInsecting = oldOptions.preReuseInsecting;
+    }
 }
 
 @end

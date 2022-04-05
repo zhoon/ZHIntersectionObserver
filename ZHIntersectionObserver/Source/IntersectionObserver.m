@@ -40,9 +40,11 @@
                 return YES;
             }
         } else {
-            // view 不复用，但是 dataKey 一样，这个时候需要移除旧的 options
+            // view 不复用，但是 dataKey 一样，这个时候需要移除旧的 options，并且同步旧 options 的 preXXX 属性到新 options 上
             UIView *existTarget = [self isTargetDataKeyExisted:options.dataKey];
+            IntersectionObserverTargetOptions *oldOptions = [self.targetOptions objectForKey:existTarget];
             if (existTarget && target != existTarget) {
+                [IntersectionObserverMeasure updateOptionsPreProperties:options fromOldOptions:oldOptions];
                 [self.targetOptions removeObjectForKey:existTarget];
             }
             [self.targetOptions setObject:options forKey:target];
