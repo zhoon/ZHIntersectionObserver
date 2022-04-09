@@ -14,6 +14,8 @@
 #import "IntersectionObserverReuseManager.h"
 #import "UIView+IntersectionObserver.h"
 
+#define NotEmptyString(str) (str && str.length > 0)
+
 @interface IntersectionObserverContainerOptions (Utils)
 
 @property(nonatomic, assign) BOOL preVisible;
@@ -40,18 +42,17 @@
 }
 
 + (void)measureWithObserver:(IntersectionObserver *)observer forTargetView:(UIView * __nullable)targetView {
+    
     // updateDataKey 调用后马上开始重新计算，但是这个时候如果是复用的 view 例如 cell，如果复用前和复用后位置不一样，那么在计算 isInsecting 的时候可能会错误。例如被复用的 view 在复用前是在屏幕外，那么复用的时候计算出来的 isInsecting 就是在屏幕外的，所以需要等待 view 重新布局之后再计算，通过 dispatch_async 使得计算再下个 runloop 再触发
     dispatch_async(dispatch_get_main_queue(), ^{
         
-        // 判断是否有 containerOptions
         IntersectionObserverContainerOptions *containerOptions = observer.containerOptions;
-        NSString *scope = containerOptions.scope;
         NSMapTable *targetOptions = observer.targetOptions;
-        if (!targetOptions || targetOptions.count <= 0) {
+        if (!containerOptions || !targetOptions || targetOptions.count <= 0) {
             return;
         }
         
-        // 获取配置参数值  
+        NSString *scope = containerOptions.scope;
         UIView *containerView = containerOptions.containerView;
         UIEdgeInsets rootMargin = containerOptions.rootMargin;
         BOOL delayReport = containerOptions.intersectionDuration > 0;
@@ -72,42 +73,39 @@
                 continue;
             }
             
-            // 计算 ratio 和可视区域
+            // 计算 ratio 和 rect
             NSDictionary *calcResult = [self calcRatioWithTargetView:curTargetView containerView:containerView rootMargin:rootMargin];
             CGFloat ratio = [[calcResult objectForKey:@"ratio"] doubleValue];
             CGRect viewportTargetRect = [[calcResult objectForKey:@"viewportTargetRect"] CGRectValue];
             CGRect intersectionRect = [[calcResult objectForKey:@"intersectionRect"] CGRectValue];
             
-            if (ratio < 0) {
-                continue;
-            }
-            
-            // preReuseInsecting 是为了结局一个 view 被复用很多次都没有曝光的情况下，会一直发送 isInsecting = NO 的事件，例如 delayReport 并且快速滚动的时候
-            if (options.dataKey && options.dataKey.length > 0 &&
-                ![options.dataKey isEqualToString:options.preDataKey] &&
-                options.preInsecting &&
-                options.preReuseInsecting) {
-                IntersectionObserverEntry *entry =
-                    [IntersectionObserverEntry initEntryWithTargetView:curTargetView
-                                                               dataKey:options.preDataKey
-                                                                  data:options.preData
-                                                    boundingClientRect:viewportTargetRect
-                                                     intersectionRatio:ratio
-                                                      intersectionRect:intersectionRect
-                                                           isInsecting:NO
-                                                            rootBounds:containerView.bounds
-                                                                  time:floor([NSDate date].timeIntervalSince1970 * 1000)];
-                options.preReuseInsecting = NO;
-                [reusedEntries addObject:entry];
-                [[IntersectionObserverReuseManager shareInstance] addReusedDataKey:entry.dataKey toScope:scope];
+            // 收集被复用的 view，delay 一定时间后检查这个 view 是否对应的旧 dataKay 还在显示，没有显示则发送 hide 的通知
+            if (NotEmptyString(options.dataKey) && NotEmptyString(options.preDataKey) && ![options.dataKey isEqualToString:options.preDataKey]) {
+                if (options.preReuseInsecting) {
+                    // preReuseInsecting 是为了解决：一个 view 被复用很多次都没有曝光的情况下，会一直发送 isInsecting = NO 的事件。例如设置 delayReport 并且快速滚动的时候
+                    IntersectionObserverEntry *entry =
+                        [IntersectionObserverEntry initEntryWithTargetView:curTargetView
+                                                                   dataKey:options.preDataKey
+                                                                      data:options.preData
+                                                        boundingClientRect:viewportTargetRect
+                                                         intersectionRatio:ratio
+                                                          intersectionRect:intersectionRect
+                                                               isInsecting:NO
+                                                                rootBounds:containerView.bounds
+                                                                      time:floor([NSDate date].timeIntervalSince1970 * 1000)];
+                    options.preReuseInsecting = NO;
+                    [reusedEntries addObject:entry];
+                    // 把被复用的 dataKey 添加到一个复用池中
+                    [[IntersectionObserverReuseManager shareInstance] addReusedDataKey:entry.dataKey toScope:scope];
+                }
             }
             
             BOOL isInsecting = [self isInsectingWithRatio:ratio containerOptions:containerOptions targetOptions:options];
             BOOL canReport = [self canReportWithRatio:ratio containerOptions:containerOptions targetOptions:options];
-            BOOL delayReportEntry = delayReport && isInsecting; // 曝光的 entry 才有 delay 的资格
             
-            if (isInsecting && options.dataKey) {
+            if (isInsecting && NotEmptyString(options.dataKey)) {
                 NSString *dataKey = options.dataKey;
+                // 之所以 delay remove，是因为这个时候对应的 dataKey 还没 add 进复用池中
                 dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                     [[IntersectionObserverReuseManager shareInstance] removeReuseDataKey:dataKey fromScope:scope];
                 });
@@ -125,36 +123,43 @@
                                                             rootBounds:containerView.bounds
                                                                   time:floor([NSDate date].timeIntervalSince1970 * 1000)];
                 if (isInsecting) {
+                    NSLog(@"showEntry %@", options.dataKey);
                     [entries addObject:entry];
                 } else {
+                    NSLog(@"hideEntry %@", options.dataKey);
                     [hideEntries addObject:entry];
+                    options.preRatio = ratio;
+                    options.preInsecting = NO;
+                    options.preReuseInsecting = YES;
+                    [[IntersectionObserverReuseManager shareInstance] removeReuseDataKey:entry.dataKey fromScope:scope];
                 }
-                if (!delayReportEntry) {
-                    // 更新各种 pre 值
-                    options.preInsecting = isInsecting;
-                    options.preReuseInsecting = isInsecting;
+                if (!delayReport) {
                     options.preDataKey = options.dataKey;
                     options.preData = options.data;
-                    if (containerOptions.measureWhenVisibilityChanged) {
-                        options.preVisible = [self isTargetViewVisible:curTargetView inContainerView:containerView];
-                    }
+                    options.preInsecting = isInsecting;
+                    options.preReuseInsecting = isInsecting;
+                }
+            } else {
+                NSLog(@"notReport %@", options.dataKey);
+                if ([[IntersectionObserverReuseManager shareInstance] isDataKeyVisible:options.dataKey inScope:scope]) {
+                    options.preDataKey = options.dataKey;
+                    options.preData = options.data;
+                    options.preInsecting = YES;
+                    options.preReuseInsecting = YES;
                 }
             }
             
-            // 非 canReport 也要更新 preRatio
-            if (!delayReportEntry) {
+            if (!delayReport) {
                 options.preRatio = ratio;
             }
+            
+            options.preVisible = [self isTargetViewVisible:curTargetView inContainerView:containerView];
         }
         
-        // 更新 pre 值
-        if (!delayReport) {
-            if (containerOptions.measureWhenVisibilityChanged) {
-                containerOptions.preVisible = [self isContainerViewVisible:containerView];
-            }
-        }
+        containerOptions.preVisible = [self isContainerViewVisible:containerView];
         
         if (hideEntries.count > 0) {
+            // 更新曝光池里面的数据
             [[IntersectionObserverReuseManager shareInstance] removeVisibleEntries:hideEntries.copy fromScope:scope];
             if (containerOptions.callback) {
                 containerOptions.callback(scope, hideEntries.copy);
@@ -172,9 +177,12 @@
                         [[IntersectionObserverReuseManager shareInstance] removeReuseDataKey:entry.dataKey fromScope:scope];
                     }
                 }];
-                [[IntersectionObserverReuseManager shareInstance] removeVisibleEntries:filterReusedEntries.copy fromScope:scope];
-                if (containerOptions.callback && filterReusedEntries.count > 0) {
-                    containerOptions.callback(scope, filterReusedEntries);
+                NSLog(@"filterReusedEntries %@", @(filterReusedEntries.count));
+                if (filterReusedEntries.count > 0) {
+                    [[IntersectionObserverReuseManager shareInstance] removeVisibleEntries:filterReusedEntries.copy fromScope:scope];
+                    if (containerOptions.callback) {
+                        containerOptions.callback(scope, filterReusedEntries);
+                    }
                 }
             });
         }
@@ -232,43 +240,28 @@
         CGRect viewportTargetRect = [[calcResult objectForKey:@"viewportTargetRect"] CGRectValue];
         CGRect intersectionRect = [[calcResult objectForKey:@"intersectionRect"] CGRectValue];
         
-        if (ratio < 0) {
-            continue;
-        }
-        
         BOOL isInsecting = [self isInsectingWithRatio:ratio containerOptions:containerOptions targetOptions:options];
         BOOL isDataKeyVisible = [[IntersectionObserverReuseManager shareInstance] isDataKeyVisible:options.dataKey inScope:scope];
         BOOL canReport = [oldEntry.dataKey isEqualToString:options.dataKey] && isInsecting == oldEntry.isInsecting && !isDataKeyVisible;
         
-        if (!canReport) {
-            continue;
+        if (canReport) {
+            IntersectionObserverEntry *entry =
+                [IntersectionObserverEntry initEntryWithTargetView:targetView
+                                                           dataKey:options.dataKey
+                                                              data:oldEntry.data
+                                                boundingClientRect:viewportTargetRect
+                                                 intersectionRatio:ratio
+                                                  intersectionRect:intersectionRect
+                                                       isInsecting:isInsecting
+                                                        rootBounds:containerView.bounds
+                                                              time:floor([NSDate date].timeIntervalSince1970 * 1000)];
+            [filterEntries addObject:entry];
+            options.preRatio = ratio;
+            options.preDataKey = options.dataKey;
+            options.preData = options.data;
+            options.preInsecting = isInsecting;
+            options.preReuseInsecting = isInsecting;
         }
-        
-        IntersectionObserverEntry *entry =
-            [IntersectionObserverEntry initEntryWithTargetView:targetView
-                                                       dataKey:options.dataKey
-                                                          data:oldEntry.data
-                                            boundingClientRect:viewportTargetRect
-                                             intersectionRatio:ratio
-                                              intersectionRect:intersectionRect
-                                                   isInsecting:isInsecting
-                                                    rootBounds:containerView.bounds
-                                                          time:floor([NSDate date].timeIntervalSince1970 * 1000)];
-        [filterEntries addObject:entry];
-        
-        options.preRatio = ratio;
-        options.preInsecting = isInsecting;
-        options.preReuseInsecting = isInsecting;
-        options.preDataKey = options.dataKey;
-        options.preData = options.data;
-        
-        if (containerOptions.measureWhenVisibilityChanged) {
-            options.preVisible = [self isTargetViewVisible:targetView inContainerView:containerView];
-        }
-    }
-    
-    if (containerOptions.measureWhenVisibilityChanged) {
-        containerOptions.preVisible = [self isContainerViewVisible:containerView];
     }
     
     if (filterEntries.count > 0) {
@@ -285,23 +278,23 @@
                             containerView:(UIView *)containerView
                                rootMargin:(UIEdgeInsets)rootMargin {
     
-    CGFloat ratio = -1;
+    CGFloat ratio = 0;
     
     CGRect convertTargetRect = [targetView convertRect:targetView.bounds toView:containerView];
     CGRect viewportTargetRect = CGRectMake(CGRectGetMinX(convertTargetRect) - containerView.bounds.origin.x, CGRectGetMinY(convertTargetRect) - floor(containerView.bounds.origin.y), CGRectGetWidth(convertTargetRect), CGRectGetHeight(convertTargetRect)); // 没加 floor 有些场景 intersectionRect 会错误，高度少了那么一点点
     
     if (![self isCGRectValidated:viewportTargetRect]) {
-        return @{@"ratio": @(ratio)};
+        return @{@"ratio": @(ratio), @"viewportTargetRect": @(CGRectZero), @"intersectionRect": @(CGRectZero)};
     }
     
     CGFloat targetViewSize = CGRectGetWidth(convertTargetRect) * CGRectGetHeight(convertTargetRect);
     if (targetViewSize <= 0) {
-        return @{@"ratio": @(ratio)};
+        return @{@"ratio": @(ratio), @"viewportTargetRect": @(CGRectZero), @"intersectionRect": @(CGRectZero)};
     }
     
     CGRect containerViewInsetRect = UIEdgeInsetsInsetRect(CGRectMake(0, 0, CGRectGetWidth(containerView.bounds), CGRectGetHeight(containerView.bounds)), rootMargin);
     if (![self isCGRectValidated:containerViewInsetRect]) {
-        return @{@"ratio": @(ratio)};
+        return @{@"ratio": @(ratio), @"viewportTargetRect": @(CGRectZero), @"intersectionRect": @(CGRectZero)};
     }
     
     CGRect intersectionRect = CGRectIntersection(containerViewInsetRect, viewportTargetRect);
@@ -324,7 +317,7 @@
     BOOL isDataKeyVisible = targetOptions.dataKey ? [[IntersectionObserverReuseManager shareInstance] isDataKeyVisible:targetOptions.dataKey inScope:containerOptions.scope] : NO;
     
     // 生命周期发生变化
-    if (containerOptions.measureWhenAppStateChanged && targetOptions.dataKey) {
+    if (containerOptions.measureWhenAppStateChanged && NotEmptyString(targetOptions.dataKey)) {
         UIApplicationState prevApplicationState = [IntersectionObserverManager shareInstance].previousApplicationState;
         if (prevApplicationState != UIApplicationStateActive &&
             UIApplication.sharedApplication.applicationState == UIApplicationStateActive) {
@@ -343,7 +336,7 @@
     }
     
     // 可视状态发生变化
-    if (containerOptions.measureWhenVisibilityChanged && targetOptions.dataKey) {
+    if (containerOptions.measureWhenVisibilityChanged && NotEmptyString(targetOptions.dataKey)) {
         BOOL targetViewVisible = [self isTargetViewVisible:targetOptions.targetView inContainerView:containerOptions.containerView];
         BOOL containerViewVisible = [self isContainerViewVisible:containerOptions.containerView];
         if (targetViewVisible != targetOptions.preVisible || containerViewVisible != containerOptions.preVisible) {
@@ -352,7 +345,7 @@
     }
     
     // 数据发生变化（或者复用）
-    if (targetOptions.dataKey && targetOptions.dataKey.length > 0 && ![targetOptions.dataKey isEqualToString:targetOptions.preDataKey]) {
+    if (NotEmptyString(targetOptions.dataKey) && NotEmptyString(targetOptions.preDataKey) && ![targetOptions.dataKey isEqualToString:targetOptions.preDataKey]) {
         if (isInsecting) {
             return !isDataKeyVisible;
         } else {
@@ -363,11 +356,16 @@
     // 前后 ratio 变化
     if ([self isInsectingWithRatio:ratio containerOptions:containerOptions targetOptions:targetOptions] !=
         [self isInsectingWithRatio:targetOptions.preRatio containerOptions:containerOptions targetOptions:targetOptions]) {
+        NSLog(@"前后 ratio 变化 %@ %@ %@", targetOptions.dataKey, @(ratio), @(targetOptions.preRatio));
         return YES;
     }
     
     // 是否达到某个 ratio
-    return [self lastMatchThreshold:containerOptions.thresholds ratio:ratio] != [self lastMatchThreshold:containerOptions.thresholds ratio:targetOptions.preRatio];
+    BOOL reachRatio = [self lastMatchThreshold:containerOptions.thresholds ratio:ratio] != [self lastMatchThreshold:containerOptions.thresholds ratio:targetOptions.preRatio];
+    if (reachRatio) {
+        NSLog(@"reachRatio %@ %@ %@ %@", targetOptions.dataKey, @(ratio), @(targetOptions.preRatio), @(isInsecting));
+    }
+    return reachRatio;
 }
 
 + (BOOL)isContainerViewVisible:(UIView *)containerView {
@@ -378,7 +376,6 @@
 }
 
 + (BOOL)isTargetViewVisible:(UIView *)targetView inContainerView:(UIView *)containerView {
-    // TODO: 这里先不要做 hidden 这个判断了，有些场景例如 cell 复用，cell 会临时被 hidden 掉，所以先去掉这个逻辑
     // BOOL flag = targetView.hidden || targetView.alpha <= 0 || !targetView.window;
     BOOL flag = !targetView.window;
     if (flag) return NO;

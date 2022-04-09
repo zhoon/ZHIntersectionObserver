@@ -56,7 +56,7 @@
 
 - (void)addVisibleEntries:(NSArray <IntersectionObserverEntry *> *)entries toScope:(NSString *)scope {
     if (!entries || entries.count <= 0) {
-        NSLog(@"Info: IntersectionObserverReuseManager no entries");
+        NSLog(@"Info: IntersectionObserverReuseManager no entries (addVisibleEntries)");
         return;
     }
     [entries enumerateObjectsUsingBlock:^(IntersectionObserverEntry * _Nonnull entry, NSUInteger idx, BOOL * _Nonnull stop) {
@@ -82,7 +82,7 @@
 
 - (void)removeVisibleEntries:(NSArray <IntersectionObserverEntry *> *)entries fromScope:(NSString *)scope {
     if (!entries || entries.count <= 0) {
-        NSLog(@"Info: IntersectionObserverReuseManager no entries");
+        NSLog(@"Info: IntersectionObserverReuseManager no entries (removeVisibleEntries)");
         return;
     }
     [entries enumerateObjectsUsingBlock:^(IntersectionObserverEntry * _Nonnull entry, NSUInteger idx, BOOL * _Nonnull stop) {

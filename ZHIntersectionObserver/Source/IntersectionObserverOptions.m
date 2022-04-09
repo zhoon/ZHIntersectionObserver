@@ -195,7 +195,7 @@
     self.data = data;
     if (self.targetView) {
         if (self.scope && self.scope.length > 0) {
-            NSLog(@"updateDataKey: view = %p, dataKey = %@", self.targetView, self.dataKey);
+            // NSLog(@"updateDataKey: view = %p, dataKey = %@", self.targetView, self.dataKey);
             [[IntersectionObserverManager shareInstance] emitObserverEventWithScope:self.scope forTargetView:self.targetView];
         }
     } else {

@@ -136,13 +136,13 @@
             IntersectionObserverEntry *entry = entries[i];
             if (entry.isInsecting) {
                 NSString *text = [NSString stringWithFormat:@"曝光: %@ ✓", [entry.data objectForKey:@"text"]];
-                NSLog(@"%@", text);
-                strongSelf.logLabel.text = [NSString stringWithFormat:@"%@\n%@", text, strongSelf.logLabel.text ?: @""];
+                NSString *newText = [NSString stringWithFormat:@"%@\n%@", text, strongSelf.logLabel.text ?: @""];
+                strongSelf.logLabel.text = [newText substringToIndex:MIN(200, newText.length)];
                 NSLog(@"Example3: dataKey = %@, isInsecting = %@", entry.dataKey, @(entry.isInsecting));
             } else {
                 NSString *text = [NSString stringWithFormat:@"隐藏: %@ ✕", [entry.data objectForKey:@"text"]];
-                NSLog(@"%@", text);
-                strongSelf.logLabel.text = [NSString stringWithFormat:@"%@\n%@", text, strongSelf.logLabel.text ?: @""];
+                NSString *newText = [NSString stringWithFormat:@"%@\n%@", text, strongSelf.logLabel.text ?: @""];
+                strongSelf.logLabel.text = [newText substringToIndex:MIN(200, newText.length)];
                 NSLog(@"Example3: dataKey = %@, isInsecting = %@", entry.dataKey, @(entry.isInsecting));
             }
         }
@@ -165,6 +165,7 @@
     NSInteger count = 6;
     if (self.isRandom) {
         NSArray *values = [self noRepeatRandomArrayWithMinNum:1 maxNum:20 count:count];
+        NSLog(@"Example3 current value = %@", values);
         self.view1.text = [NSString stringWithFormat:@"%@", values[0]];
         self.view2.text = [NSString stringWithFormat:@"%@", values[1]];
         self.view3.text = [NSString stringWithFormat:@"%@", values[2]];
