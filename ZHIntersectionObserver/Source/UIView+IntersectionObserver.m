@@ -50,8 +50,10 @@ static char kAssociatedObjectKey_intersectionObserverTargetOptions;
         }
         [classes enumerateObjectsUsingBlock:^(Class  _Nonnull class, NSUInteger idx, BOOL * _Nonnull stop) {
             IntersectionObserver_ExtendImplementationOfVoidMethodWithoutArguments(class, @selector(didMoveToWindow), ^(UIView *selfObject) {
-                if (selfObject.intersectionObserverTargetOptions || selfObject.intersectionObserverContainerOptions) {
-                    if (selfObject.intersectionObserverContainerOptions.measureWhenVisibilityChanged) {
+                NSString *scope = selfObject.intersectionObserverContainerOptions.scope ?: selfObject.intersectionObserverTargetOptions.scope;
+                if (scope && scope.length > 0) {
+                    IntersectionObserver *observer = [[IntersectionObserverManager shareInstance] observerForScope:scope];
+                    if (observer && observer.containerOptions.measureWhenVisibilityChanged) {
                         [selfObject handleViewVisibilityChangedEventForTargetView:selfObject.intersectionObserverTargetOptions ? selfObject : nil];
                     }
                 }
@@ -235,6 +237,10 @@ static char kAssociatedObjectKey_intersectionObserverTargetOptions;
         return;
     }
     if (_view.intersectionObserverTargetOptions || _view.intersectionObserverContainerOptions) {
+        NSString *scope = _view.intersectionObserverContainerOptions.scope ?: _view.intersectionObserverTargetOptions.scope;
+        if (!scope) {
+            NSAssert(NO, @"no scope");
+        }
         if ([keyPath isEqualToString:@"bounds"]) {
             CGRect oldBounds = [change[NSKeyValueChangeOldKey] CGRectValue];
             CGRect newBounds = [change[NSKeyValueChangeNewKey] CGRectValue];
@@ -247,8 +253,10 @@ static char kAssociatedObjectKey_intersectionObserverTargetOptions;
                 [_view handleViewVisibilityChangedEventForTargetView:_view.intersectionObserverTargetOptions ? _view : nil];
             }
         }
-        if ([keyPath isEqualToString:@"alpha"] && _view.intersectionObserverContainerOptions.measureWhenVisibilityChanged) {
-            if ([change[NSKeyValueChangeOldKey] doubleValue] != [change[NSKeyValueChangeNewKey] doubleValue]) {
+        if ([keyPath isEqualToString:@"alpha"]) {
+            IntersectionObserver *observer = [[IntersectionObserverManager shareInstance] observerForScope:scope];
+            if (observer.containerOptions.measureWhenVisibilityChanged &&
+                [change[NSKeyValueChangeOldKey] doubleValue] != [change[NSKeyValueChangeNewKey] doubleValue]) {
                 // 延迟设置，一些场景只是临时某一瞬间修改然后改回来
                 __weak __typeof(_view)weakView = _view;
                 dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
@@ -259,8 +267,10 @@ static char kAssociatedObjectKey_intersectionObserverTargetOptions;
                 });
             }
         }
-        if ([keyPath isEqualToString:@"hidden"] && _view.intersectionObserverContainerOptions.measureWhenVisibilityChanged) {
-            if ([change[NSKeyValueChangeOldKey] boolValue] != [change[NSKeyValueChangeNewKey] boolValue]) {
+        if ([keyPath isEqualToString:@"hidden"]) {
+            IntersectionObserver *observer = [[IntersectionObserverManager shareInstance] observerForScope:scope];
+            if (observer.containerOptions.measureWhenVisibilityChanged &&
+                [change[NSKeyValueChangeOldKey] boolValue] != [change[NSKeyValueChangeNewKey] boolValue]) {
                 // 延迟设置，一些场景只是临时某一瞬间修改然后改回来
                 __weak __typeof(_view)weakView = _view;
                 dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{

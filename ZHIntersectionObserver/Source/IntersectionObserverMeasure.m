@@ -348,7 +348,7 @@
         if (prevApplicationState != UIApplicationStateBackground &&
             UIApplication.sharedApplication.applicationState == UIApplicationStateBackground) {
             // 直接返回 YES 会导致那些那些一开始没曝光的 item 会发送多 isInsecting = NO 的通知
-            // 如果改为 isInsecting != targetOptions.preInsecting 会导致 cell 不复用的情况切换前后台无法触发事件，所以需要通过 updateOptionsPreProperties:fromOldOptions 同步一下 options，但是还是会存在之前非曝光过的被复用到曝光的时候，isInsecting != targetOptions.preInsecting 为 NO（isInsecting 必定为 NO，没曝光的 item 的 targetOptions.preInsecting 也是 NO），导致当前没有发送 isInsecting = NO 事件，所以最后改成 isDataKeyVisible，但是要求设置 dataKey 才能生效。
+            // 如果改为 isInsecting != preInsecting 会导致 cell 不复用的情况切换前后台无法触发事件，所以需要通过 updateOptionsPreProperties:fromOldOptions 同步一下 options，但是还是会存在之前非曝光过的被复用到曝光的时候，isInsecting != preInsecting 为 NO（isInsecting 必定为 NO，没曝光的 item 的 preInsecting 也是 NO），导致当前没有发送 isInsecting = NO 事件，所以最后改成 isDataKeyVisible，但是要求设置 dataKey 才能生效。
             return [[IntersectionObserverReuseManager shareInstance] isDataKeyVisible:targetOptions.dataKey inScope:containerOptions.scope];
         }
     }
@@ -389,14 +389,14 @@
 }
 
 + (BOOL)isTargetViewVisible:(UIView *)targetView inContainerView:(UIView *)containerView {
-    // BOOL flag = targetView.hidden || targetView.alpha <= 0 || !targetView.window;
-    BOOL flag = !targetView.window;
+    BOOL flag = targetView.hidden || targetView.alpha <= 0 || !targetView.window;
+    // BOOL flag = !targetView.window;
     if (flag) return NO;
     BOOL visible = YES;
     while (targetView.superview && targetView.superview != containerView) {
         targetView = targetView.superview;
-        // flag = targetView.hidden || targetView.alpha <= 0 || !targetView.window;
-        flag = !targetView.window;
+        flag = targetView.hidden || targetView.alpha <= 0 || !targetView.window;
+        // flag = !targetView.window;
         if (flag) {
             visible = NO;
             break;

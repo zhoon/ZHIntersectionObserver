@@ -49,10 +49,10 @@
             IntersectionObserverTargetOptions *oldOptions = [self.targetOptions objectForKey:existTarget];
             if (existTarget && target != existTarget) {
                 [IntersectionObserverMeasure updateOptionsPreProperties:options fromOldOptions:oldOptions];
-                NSLog(@"remove old options %@", oldOptions.dataKey);
+                // NSLog(@"remove old options %@", oldOptions.dataKey);
                 [self.targetOptions removeObjectForKey:existTarget];
             }
-            NSLog(@"add new options %@", options.dataKey);
+            // NSLog(@"add new options %@", options.dataKey);
             [self.targetOptions setObject:options forKey:target];
             return YES;
         }

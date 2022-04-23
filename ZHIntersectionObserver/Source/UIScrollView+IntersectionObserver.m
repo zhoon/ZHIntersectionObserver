@@ -82,6 +82,7 @@ static char kAssociatedObjectKey_throttlePrevDate;
     }
 }
 
+// 节流函数，并且确保最后一次会被调用
 - (void)runThrottleTask:(void (^)(void))actionBlock interval:(NSTimeInterval)interval {
     if (!actionBlock) {
         return;

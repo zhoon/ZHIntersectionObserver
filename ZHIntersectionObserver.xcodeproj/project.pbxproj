@@ -10,6 +10,7 @@
 		FE16541427F72A2D00B22378 /* IntersectionObserverReuseManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FE16541327F72A2D00B22378 /* IntersectionObserverReuseManager.m */; };
 		FE18C0DB26969B23005F94D4 /* ZHExample1ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FE18C0DA26969B23005F94D4 /* ZHExample1ViewController.m */; };
 		FE18C0DE2696C0CD005F94D4 /* ZHExample2ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FE18C0DD2696C0CD005F94D4 /* ZHExample2ViewController.m */; };
+		FE52FDB32813EF2800F1F936 /* ZHExample4ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FE52FDB22813EF2800F1F936 /* ZHExample4ViewController.m */; };
 		FE966A70269AF8DB00EB89B7 /* ZHExample3ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = FE966A6F269AF8DB00EB89B7 /* ZHExample3ViewController.m */; };
 		FEF6F9BB2695885200441571 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = FEF6F9BA2695885200441571 /* AppDelegate.m */; };
 		FEF6F9BE2695885200441571 /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = FEF6F9BD2695885200441571 /* SceneDelegate.m */; };
@@ -52,6 +53,8 @@
 		FE18C0DA26969B23005F94D4 /* ZHExample1ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZHExample1ViewController.m; sourceTree = "<group>"; };
 		FE18C0DC2696C0CD005F94D4 /* ZHExample2ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZHExample2ViewController.h; sourceTree = "<group>"; };
 		FE18C0DD2696C0CD005F94D4 /* ZHExample2ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZHExample2ViewController.m; sourceTree = "<group>"; };
+		FE52FDB12813EF2800F1F936 /* ZHExample4ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZHExample4ViewController.h; sourceTree = "<group>"; };
+		FE52FDB22813EF2800F1F936 /* ZHExample4ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZHExample4ViewController.m; sourceTree = "<group>"; };
 		FE966A6E269AF8DB00EB89B7 /* ZHExample3ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZHExample3ViewController.h; sourceTree = "<group>"; };
 		FE966A6F269AF8DB00EB89B7 /* ZHExample3ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ZHExample3ViewController.m; sourceTree = "<group>"; };
 		FEF6F9B62695885200441571 /* ZHIntersectionObserver.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ZHIntersectionObserver.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -122,6 +125,8 @@
 				FE18C0DD2696C0CD005F94D4 /* ZHExample2ViewController.m */,
 				FE966A6E269AF8DB00EB89B7 /* ZHExample3ViewController.h */,
 				FE966A6F269AF8DB00EB89B7 /* ZHExample3ViewController.m */,
+				FE52FDB12813EF2800F1F936 /* ZHExample4ViewController.h */,
+				FE52FDB22813EF2800F1F936 /* ZHExample4ViewController.m */,
 			);
 			path = Pages;
 			sourceTree = "<group>";
@@ -349,6 +354,7 @@
 				FEF6F9F526958BB600441571 /* UIView+IntersectionObserver.m in Sources */,
 				FEF6FA0526958BD400441571 /* IntersectionObserverManager.m in Sources */,
 				FEF6FA0926958F3200441571 /* ZHExampleTableViewController.m in Sources */,
+				FE52FDB32813EF2800F1F936 /* ZHExample4ViewController.m in Sources */,
 				FE966A70269AF8DB00EB89B7 /* ZHExample3ViewController.m in Sources */,
 				FEF6F9CC2695885300441571 /* main.m in Sources */,
 				FEF6F9F626958BB600441571 /* UIScrollView+IntersectionObserver.m in Sources */,

@@ -13,3 +13,7 @@
 #import "IntersectionObserverReuseManager.h"
 #import "UIView+IntersectionObserver.h"
 #import "UIScrollView+IntersectionObserver.h"
+
+/*
+ *  TODO: 写介绍、用法、原理、不足
+ */

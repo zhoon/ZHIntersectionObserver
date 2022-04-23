@@ -186,6 +186,10 @@
     if ([dataKey isEqualToString:self.dataKey]) {
         return;
     } */
+    if (!dataKey || !data) {
+        NSAssert(NO, @"no dataKey or data");
+        return;
+    }
     self.dataKey = dataKey;
     self.data = data;
     if (self.targetView) {
