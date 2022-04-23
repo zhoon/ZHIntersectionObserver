@@ -158,11 +158,6 @@
 @implementation IntersectionObserverTargetOptions
 
 + (instancetype)initOptionsWithScope:(NSString *)scope
-                          targetView:(UIView *)targetView {
-    return [self initOptionsWithScope:scope dataKey:nil data:nil targetView:targetView];
-}
-
-+ (instancetype)initOptionsWithScope:(NSString *)scope
                              dataKey:(NSString * __nullable)dataKey
                           targetView:(UIView *)targetView {
     return [self initOptionsWithScope:scope dataKey:dataKey data:nil targetView:targetView];
@@ -211,6 +206,7 @@
     if (_dataKey && _dataKey.length > 0 && _scope && _scope.length > 0) {
         [[IntersectionObserverReuseManager shareInstance] removeReuseDataKey:_dataKey fromScope:_scope];
         [[IntersectionObserverReuseManager shareInstance] removeVisibleDataKey:_dataKey fromScope:_scope];
+        [[IntersectionObserverReuseManager shareInstance] removeRatioFromDataKey:_dataKey fromScope:_scope];
     }
     NSLog(@"target dealloc");
 }

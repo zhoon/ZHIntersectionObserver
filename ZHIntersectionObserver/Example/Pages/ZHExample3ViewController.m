@@ -114,7 +114,7 @@
     self.logLabel.font = [UIFont systemFontOfSize:14];
     self.logLabel.textColor = [UIColor grayColor];
     self.logLabel.numberOfLines = 0;
-    self.logLabel.text = @"进入界面 0.5 秒后切换数据，曝光时间要求 0.6 秒\n停留时间短（第一批数据）的数据将不会被曝光";
+    self.logLabel.text = @"进入界面 0.4 秒后切换数据，曝光时间要求 0.6 秒\n停留时间短（第一批数据）的数据将不会被曝光";
     [self.logLabel sizeToFit];
     [self.view addSubview:self.logLabel];
 }
@@ -135,12 +135,12 @@
         for (NSInteger i = 0; i < entries.count; i++) {
             IntersectionObserverEntry *entry = entries[i];
             if (entry.isInsecting) {
-                NSString *text = [NSString stringWithFormat:@"曝光: %@ ✓", [entry.data objectForKey:@"text"]];
+                NSString *text = [NSString stringWithFormat:@"✓曝光：%@", [entry.data objectForKey:@"text"]];
                 NSString *newText = [NSString stringWithFormat:@"%@\n%@", text, strongSelf.logLabel.text ?: @""];
                 strongSelf.logLabel.text = [newText substringToIndex:MIN(200, newText.length)];
                 NSLog(@"Example3: dataKey = %@, isInsecting = %@", entry.dataKey, @(entry.isInsecting));
             } else {
-                NSString *text = [NSString stringWithFormat:@"隐藏: %@ ✕", [entry.data objectForKey:@"text"]];
+                NSString *text = [NSString stringWithFormat:@"✕隐藏：%@", [entry.data objectForKey:@"text"]];
                 NSString *newText = [NSString stringWithFormat:@"%@\n%@", text, strongSelf.logLabel.text ?: @""];
                 strongSelf.logLabel.text = [newText substringToIndex:MIN(200, newText.length)];
                 NSLog(@"Example3: dataKey = %@, isInsecting = %@", entry.dataKey, @(entry.isInsecting));
@@ -156,7 +156,7 @@
 
 - (void)setupData {
     [self handleChange];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.4 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [self handleChange];
     });
 }

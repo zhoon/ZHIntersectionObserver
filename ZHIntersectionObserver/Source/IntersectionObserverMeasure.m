@@ -25,12 +25,9 @@
 
 @interface IntersectionObserverTargetOptions (Utils)
 
-@property(nonatomic, assign) CGFloat preRatio;
-@property(nonatomic, assign) BOOL preInsecting;
 @property(nonatomic, assign) BOOL preVisible;
 @property(nonatomic, copy) NSString *preDataKey;
 @property(nonatomic, copy) NSDictionary *preData;
-@property(nonatomic, assign) BOOL preReuseInsecting;
 
 @end
 
@@ -61,6 +58,19 @@
         NSMutableArray *entries = [[NSMutableArray alloc] init];
         NSMutableArray *reusedEntries = [[NSMutableArray alloc] init];
         NSMutableArray *hideEntries = [[NSMutableArray alloc] init];
+        
+        // NSLog(@"=================");
+        
+        /*
+        NSMutableArray *logDataKeys = [[NSMutableArray alloc] init];
+        for (UIView *target in targetOptions.keyEnumerator) {
+            IntersectionObserverTargetOptions *options = [targetOptions objectForKey:target];
+            if (NotEmptyString(options.dataKey)) {
+                [logDataKeys addObject:[NSString stringWithFormat:@"%@ %p", options.dataKey, target]];
+            }
+        }
+        NSLog(@"current dataKeys: %@", [logDataKeys componentsJoinedByString:@", "]);
+        */
 
         for (UIView *target in targetOptions.keyEnumerator) {
             
@@ -79,10 +89,22 @@
             CGRect viewportTargetRect = [[calcResult objectForKey:@"viewportTargetRect"] CGRectValue];
             CGRect intersectionRect = [[calcResult objectForKey:@"intersectionRect"] CGRectValue];
             
-            // 收集被复用的 view，delay 一定时间后检查这个 view 是否对应的旧 dataKay 还在显示，没有显示则发送 hide 的通知
+            BOOL isReused = NO;
+            BOOL isInsecting = [self isInsectingWithRatio:ratio containerOptions:containerOptions targetOptions:options];
+            
+            void (^delayRemoveReuseDataKey)(void) = ^void() {
+                NSString *dataKey = options.dataKey;
+                // 之所以 delay remove，是因为这个时候对应的 dataKey 还没 add 进复用池中
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                    // NSLog(@"removeReuseDataKey %@ aaa", dataKey);
+                    [[IntersectionObserverReuseManager shareInstance] removeReuseDataKey:dataKey fromScope:scope];
+                });
+            };
+            
+            // 收集被复用的正在显示的 view（dataKey），delay 一定时间后检查这个 view 是否对应的旧 dataKay 还在显示，没有显示则发送 hide 的通知
             if (NotEmptyString(options.dataKey) && NotEmptyString(options.preDataKey) && ![options.dataKey isEqualToString:options.preDataKey]) {
-                if (options.preReuseInsecting) {
-                    // preReuseInsecting 是为了解决：一个 view 被复用很多次都没有曝光的情况下，会一直发送 isInsecting = NO 的事件。例如设置 delayReport 并且快速滚动的时候
+                if ([[IntersectionObserverReuseManager shareInstance] isDataKeyVisible:options.preDataKey inScope:scope]) {
+                    // TODO: 有没有可能 throttle 太大导致服用之后旧的 dataKey 没有 hide 通知，因为还没等到检查 reusedEntries 这个 options 就被销毁了
                     IntersectionObserverEntry *entry =
                         [IntersectionObserverEntry initEntryWithTargetView:curTargetView
                                                                    dataKey:options.preDataKey
@@ -93,25 +115,27 @@
                                                                isInsecting:NO
                                                                 rootBounds:containerView.bounds
                                                                       time:floor([NSDate date].timeIntervalSince1970 * 1000)];
-                    options.preReuseInsecting = NO;
-                    [reusedEntries addObject:entry];
                     // 把被复用的 dataKey 添加到一个复用池中
+                    [reusedEntries addObject:entry];
+                    // NSLog(@"zhoon reuse manager add current %@", options.dataKey);
                     [[IntersectionObserverReuseManager shareInstance] addReusedDataKey:entry.dataKey toScope:scope];
+                }
+                // 不能放到上面 if 里面，否则当可视的 dataKey1 复用了不可视的 dataKey3，可视的 dataKey1 不会走 remove，
+                // 从而导致这个可视的 dataKey1 被可视的 dataKey2 复用之后加入复用池后没有被移除，所以会收到多余的 hide 事件通知
+                if (isInsecting) {
+                    // 被复用并且 isInsecting = YES 需要延迟移除，避免收到 hide 事件通知
+                    isReused = YES;
+                    delayRemoveReuseDataKey();
                 }
             }
             
-            BOOL isInsecting = [self isInsectingWithRatio:ratio containerOptions:containerOptions targetOptions:options];
             BOOL canReport = [self canReportWithRatio:ratio containerOptions:containerOptions targetOptions:options];
             
-            if (isInsecting && NotEmptyString(options.dataKey)) {
-                NSString *dataKey = options.dataKey;
-                // 之所以 delay remove，是因为这个时候对应的 dataKey 还没 add 进复用池中
-                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                    [[IntersectionObserverReuseManager shareInstance] removeReuseDataKey:dataKey fromScope:scope];
-                });
-            }
-            
             if (canReport) {
+                if (!isReused) {
+                    // 非复用（例如滚动触发）的这里才延迟移除，否则会导致多移除从而 hide 事件没有通知
+                    delayRemoveReuseDataKey();
+                }
                 IntersectionObserverEntry *entry =
                     [IntersectionObserverEntry initEntryWithTargetView:curTargetView
                                                                dataKey:options.dataKey
@@ -123,37 +147,28 @@
                                                             rootBounds:containerView.bounds
                                                                   time:floor([NSDate date].timeIntervalSince1970 * 1000)];
                 if (isInsecting) {
-                    NSLog(@"showEntry %@", options.dataKey);
+                    // NSLog(@"showEntry %@", options.dataKey);
                     [entries addObject:entry];
                 } else {
-                    NSLog(@"hideEntry %@", options.dataKey);
-                    [hideEntries addObject:entry];
-                    options.preRatio = ratio;
-                    options.preInsecting = NO;
-                    options.preReuseInsecting = YES;
-                    [[IntersectionObserverReuseManager shareInstance] removeReuseDataKey:entry.dataKey fromScope:scope];
-                }
-                if (!delayReport) {
-                    options.preDataKey = options.dataKey;
-                    options.preData = options.data;
-                    options.preInsecting = isInsecting;
-                    options.preReuseInsecting = isInsecting;
+                    // NSLog(@"hideEntry %@", options.dataKey);
+                    if ([[IntersectionObserverReuseManager shareInstance] isDataKeyVisible:entry.dataKey inScope:scope]) {
+                        [hideEntries addObject:entry];
+                        // NSLog(@"removeReuseDataKey %@ bbb", entry.dataKey);
+                        [[IntersectionObserverReuseManager shareInstance] removeReuseDataKey:entry.dataKey fromScope:scope];
+                    }
                 }
             } else {
-                NSLog(@"notReport %@", options.dataKey);
-                if ([[IntersectionObserverReuseManager shareInstance] isDataKeyVisible:options.dataKey inScope:scope]) {
-                    options.preDataKey = options.dataKey;
-                    options.preData = options.data;
-                    options.preInsecting = YES;
-                    options.preReuseInsecting = YES;
-                }
+                // NSLog(@"notReport %@", options.dataKey);
             }
             
-            if (!delayReport) {
-                options.preRatio = ratio;
+            if (!canReport || !delayReport) {
+                options.preDataKey = options.dataKey;
+                options.preData = options.data;
             }
             
+            // NSLog(@"write ratio %@ %@ aaa", options.dataKey, @(ratio));
             options.preVisible = [self isTargetViewVisible:curTargetView inContainerView:containerView];
+            [[IntersectionObserverReuseManager shareInstance] addRatio:ratio toDataKey:options.dataKey toScope:scope];
         }
         
         containerOptions.preVisible = [self isContainerViewVisible:containerView];
@@ -170,14 +185,17 @@
             // 0.2s 之后检查被复用的 view 的 dataKey 是否还是曝光状态
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                 NSMutableArray *filterReusedEntries = [[NSMutableArray alloc] init];
+                NSMutableArray *testArrary = [[NSMutableArray alloc] init];
                 [reusedEntries enumerateObjectsUsingBlock:^(IntersectionObserverEntry * _Nonnull entry, NSUInteger idx, BOOL * _Nonnull stop) {
                     BOOL removed = [[IntersectionObserverReuseManager shareInstance] isReusedDataKeyRemoved:entry.dataKey inScope:scope];
                     if (!removed) {
+                        [testArrary addObject:entry.dataKey];
                         [filterReusedEntries addObject:entry];
+                        // NSLog(@"removeReuseDataKey %@ ccc", entry.dataKey);
                         [[IntersectionObserverReuseManager shareInstance] removeReuseDataKey:entry.dataKey fromScope:scope];
                     }
                 }];
-                NSLog(@"filterReusedEntries %@", @(filterReusedEntries.count));
+                NSLog(@"filterReusedEntries %@ %@", @(filterReusedEntries.count), testArrary);
                 if (filterReusedEntries.count > 0) {
                     [[IntersectionObserverReuseManager shareInstance] removeVisibleEntries:filterReusedEntries.copy fromScope:scope];
                     if (containerOptions.callback) {
@@ -201,7 +219,6 @@
                 }
             }
         }
-        
     });
 }
 
@@ -241,13 +258,17 @@
         CGRect intersectionRect = [[calcResult objectForKey:@"intersectionRect"] CGRectValue];
         
         BOOL isInsecting = [self isInsectingWithRatio:ratio containerOptions:containerOptions targetOptions:options];
-        BOOL isDataKeyVisible = [[IntersectionObserverReuseManager shareInstance] isDataKeyVisible:options.dataKey inScope:scope];
+        BOOL isDataKeyVisible = [[IntersectionObserverReuseManager shareInstance] isDataKeyVisible:oldEntry.dataKey inScope:scope];
         BOOL canReport = [oldEntry.dataKey isEqualToString:options.dataKey] && isInsecting == oldEntry.isInsecting && !isDataKeyVisible;
+        
+        // 不需要更新 ratio，都是 delay 前就更新了
+        options.preDataKey = options.dataKey;
+        options.preData = options.data;
         
         if (canReport) {
             IntersectionObserverEntry *entry =
                 [IntersectionObserverEntry initEntryWithTargetView:targetView
-                                                           dataKey:options.dataKey
+                                                           dataKey:oldEntry.dataKey
                                                               data:oldEntry.data
                                                 boundingClientRect:viewportTargetRect
                                                  intersectionRatio:ratio
@@ -256,11 +277,8 @@
                                                         rootBounds:containerView.bounds
                                                               time:floor([NSDate date].timeIntervalSince1970 * 1000)];
             [filterEntries addObject:entry];
-            options.preRatio = ratio;
-            options.preDataKey = options.dataKey;
-            options.preData = options.data;
-            options.preInsecting = isInsecting;
-            options.preReuseInsecting = isInsecting;
+            // NSLog(@"removeReuseDataKey %@ ddd", entry.dataKey);
+            [[IntersectionObserverReuseManager shareInstance] removeReuseDataKey:entry.dataKey fromScope:scope];
         }
     }
     
@@ -312,8 +330,8 @@
           containerOptions:(IntersectionObserverContainerOptions *)containerOptions
              targetOptions:(IntersectionObserverTargetOptions *)targetOptions {
     
+    CGFloat preRatio = [[IntersectionObserverReuseManager shareInstance] ratioForDataKey:targetOptions.dataKey inScope:containerOptions.scope];
     BOOL isInsecting = [self isInsectingWithRatio:ratio containerOptions:containerOptions targetOptions:targetOptions];
-    
     BOOL isDataKeyVisible = targetOptions.dataKey ? [[IntersectionObserverReuseManager shareInstance] isDataKeyVisible:targetOptions.dataKey inScope:containerOptions.scope] : NO;
     
     // 生命周期发生变化
@@ -340,31 +358,26 @@
         BOOL targetViewVisible = [self isTargetViewVisible:targetOptions.targetView inContainerView:containerOptions.containerView];
         BOOL containerViewVisible = [self isContainerViewVisible:containerOptions.containerView];
         if (targetViewVisible != targetOptions.preVisible || containerViewVisible != containerOptions.preVisible) {
-            return isInsecting != targetOptions.preInsecting;
+            return isInsecting ? !isDataKeyVisible : isDataKeyVisible;
         }
     }
     
     // 数据发生变化（或者复用）
     if (NotEmptyString(targetOptions.dataKey) && NotEmptyString(targetOptions.preDataKey) && ![targetOptions.dataKey isEqualToString:targetOptions.preDataKey]) {
-        if (isInsecting) {
-            return !isDataKeyVisible;
-        } else {
-            return isDataKeyVisible;
-        }
+        // NSLog(@"数据变化 dataChange %@ %@ %@", targetOptions.dataKey, @(isInsecting), @(isDataKeyVisible));
+        return isInsecting ? !isDataKeyVisible : isDataKeyVisible;
     }
     
     // 前后 ratio 变化
-    if ([self isInsectingWithRatio:ratio containerOptions:containerOptions targetOptions:targetOptions] !=
-        [self isInsectingWithRatio:targetOptions.preRatio containerOptions:containerOptions targetOptions:targetOptions]) {
-        NSLog(@"前后 ratio 变化 %@ %@ %@", targetOptions.dataKey, @(ratio), @(targetOptions.preRatio));
-        return YES;
+    BOOL preInsecting = [self isInsectingWithRatio:preRatio containerOptions:containerOptions targetOptions:targetOptions];
+    if (isInsecting != preInsecting) {
+        // NSLog(@"前后 ratio 变化 %@ %@ %@ %@", targetOptions.dataKey, @(ratio), @(preRatio), @(isDataKeyVisible));
+        return isInsecting ? !isDataKeyVisible : isDataKeyVisible;
     }
     
     // 是否达到某个 ratio
-    BOOL reachRatio = [self lastMatchThreshold:containerOptions.thresholds ratio:ratio] != [self lastMatchThreshold:containerOptions.thresholds ratio:targetOptions.preRatio];
-    if (reachRatio) {
-        NSLog(@"reachRatio %@ %@ %@ %@", targetOptions.dataKey, @(ratio), @(targetOptions.preRatio), @(isInsecting));
-    }
+    BOOL reachRatio = [self lastMatchThreshold:containerOptions.thresholds ratio:ratio] != [self lastMatchThreshold:containerOptions.thresholds ratio:preRatio];
+    // NSLog(@"达到 reachRatio %@ %@ %@ %@ %@", targetOptions.dataKey, @(ratio), @(preRatio), @(isInsecting), @(reachRatio));
     return reachRatio;
 }
 
@@ -461,13 +474,11 @@
 + (void)updateOptionsPreProperties:(IntersectionObserverTargetOptions *)options
                     fromOldOptions:(IntersectionObserverTargetOptions *)oldOptions {
     if (options && oldOptions) {
-        options.preRatio = oldOptions.preRatio;
-        options.preInsecting = oldOptions.preInsecting;
+        // 这里没有复用，所以没有 preData 和 preDataKey，只需要更新 preRatio 和 preVisible
+        CGFloat preRatio = [[IntersectionObserverReuseManager shareInstance] ratioForDataKey:oldOptions.dataKey inScope:options.scope];
+        // NSLog(@"write ratio %@ %@ bbb", options.dataKey, @(preRatio));
+        [[IntersectionObserverReuseManager shareInstance] addRatio:preRatio toDataKey:options.dataKey toScope:options.scope];
         options.preVisible = oldOptions.preVisible;
-        options.preDataKey = oldOptions.preDataKey;
-        options.preData = oldOptions.preData;
-        options.preDataKey = oldOptions.preDataKey;
-        options.preReuseInsecting = oldOptions.preReuseInsecting;
     }
 }
 
@@ -489,46 +500,11 @@ static char kAssociatedObjectKey_UtilsContainerPreVisible;
 @end
 
 
-static char kAssociatedObjectKey_UtilsPreRatio;
-static char kAssociatedObjectKey_UtilsPreInsecting;
-static char kAssociatedObjectKey_UtilsPreReuseInsecting;
 static char kAssociatedObjectKey_UtilsPreVisible;
 static char kAssociatedObjectKey_UtilsPreDataKey;
 static char kAssociatedObjectKey_UtilsPreData;
 
 @implementation IntersectionObserverTargetOptions (Utils)
-
-- (void)setPreRatio:(CGFloat)preRatio {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_UtilsPreRatio, @(preRatio), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-
-- (CGFloat)preRatio {
-    return [objc_getAssociatedObject(self, &kAssociatedObjectKey_UtilsPreRatio) doubleValue];
-}
-
-- (void)setPreInsecting:(BOOL)preInsecting {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_UtilsPreInsecting, @(preInsecting), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-
-- (BOOL)preInsecting {
-    return [objc_getAssociatedObject(self, &kAssociatedObjectKey_UtilsPreInsecting) boolValue];
-}
-
-- (void)setPreReuseInsecting:(BOOL)preReuseInsecting {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_UtilsPreReuseInsecting, @(preReuseInsecting), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-
-- (BOOL)preReuseInsecting {
-    return [objc_getAssociatedObject(self, &kAssociatedObjectKey_UtilsPreReuseInsecting) boolValue];
-}
-
-- (void)setPreVisible:(BOOL)preVisible {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_UtilsPreVisible, @(preVisible), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-
-- (BOOL)preVisible {
-    return [objc_getAssociatedObject(self, &kAssociatedObjectKey_UtilsPreVisible) boolValue];
-}
 
 - (void)setPreDataKey:(NSString *)preDataKey {
     objc_setAssociatedObject(self, &kAssociatedObjectKey_UtilsPreDataKey, preDataKey, OBJC_ASSOCIATION_COPY_NONATOMIC);
@@ -544,6 +520,14 @@ static char kAssociatedObjectKey_UtilsPreData;
 
 - (NSDictionary *)preData {
     return objc_getAssociatedObject(self, &kAssociatedObjectKey_UtilsPreData);
+}
+
+- (void)setPreVisible:(BOOL)preVisible {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_UtilsPreVisible, @(preVisible), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+- (BOOL)preVisible {
+    return [objc_getAssociatedObject(self, &kAssociatedObjectKey_UtilsPreVisible) boolValue];
 }
 
 @end
