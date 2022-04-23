@@ -15,7 +15,7 @@
 
 ### 基础曝光功能：
 
-<img src="/images/intersection_observer_1.gif" alt="基础曝光功能" width="320"/>
+<img src="https://github.com/zhoon/ZHIntersectionObserver/blob/main/images/intersection_observer_1.gif" alt="基础曝光功能" width="320"/>
 
 ### 延迟曝光 / Cell 的复用：
 
