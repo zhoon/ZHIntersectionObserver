@@ -34,6 +34,7 @@
     self.view.backgroundColor = [UIColor whiteColor];
     self.tableView.rowHeight = 100;
     
+    // TODO: 不复用的时候，reloadData 的时候把 view 给刷走了，那么新数据和旧数据会走 show 和 hide 吗？
     /*
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [self.tableView reloadData];

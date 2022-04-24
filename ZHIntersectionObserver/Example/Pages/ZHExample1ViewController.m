@@ -131,7 +131,7 @@
     }];
     self.containerView.intersectionObserverContainerOptions = containerOptions;
 
-    IntersectionObserverTargetOptions *targetOptions = [IntersectionObserverTargetOptions initOptionsWithScope:@"Example1" targetView:self.targetView];
+    IntersectionObserverTargetOptions *targetOptions = [IntersectionObserverTargetOptions initOptionsWithScope:@"Example1" dataKey:@"Example1" targetView:self.targetView];
     self.targetView.intersectionObserverTargetOptions = targetOptions;
 }
 

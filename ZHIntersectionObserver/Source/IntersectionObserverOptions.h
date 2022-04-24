@@ -99,10 +99,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// 初始化方法
 + (instancetype)initOptionsWithScope:(NSString *)scope
-                          targetView:(UIView *)targetView;
-
-/// 初始化方法
-+ (instancetype)initOptionsWithScope:(NSString *)scope
                              dataKey:(NSString * __nullable)dataKey
                           targetView:(UIView *)targetView;
 

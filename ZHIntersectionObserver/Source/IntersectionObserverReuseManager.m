@@ -8,6 +8,8 @@
 #import "IntersectionObserverReuseManager.h"
 #import "IntersectionObserverEntry.h"
 
+#define NotEmptyString(str) (str && str.length > 0)
+
 @implementation IntersectionObserverReuseManager
 
 + (instancetype)shareInstance {
@@ -28,12 +30,12 @@
 }
 
 - (BOOL)isDataKeyVisible:(NSString *)dataKey inScope:(NSString *)scope {
-    if (!dataKey || dataKey.length <= 0) {
-        // NSLog(@"Warning: IntersectionObserverReuseManager no dataKey，当前如果不是复用的 view 可以不用管");
+    if (!NotEmptyString(scope)) {
+        NSAssert(NO, @"");
         return NO;
     }
-    if (!scope || scope.length <= 0) {
-        NSAssert(NO, @"");
+    if (!NotEmptyString(dataKey)) {
+        // NSLog(@"Warning: IntersectionObserverReuseManager no dataKey，当前如果不是复用的 view 可以不用管");
         return NO;
     }
     NSMutableSet *dataKeys = self.visibleDataKeys && self.visibleDataKeys[scope] ? [[NSMutableSet alloc] initWithSet:self.visibleDataKeys[scope]] : [NSMutableSet set];
@@ -41,12 +43,12 @@
 }
 
 - (void)addVisibleDataKey:(NSString *)dataKey toScope:(NSString *)scope {
-    if (!dataKey || dataKey.length <= 0) {
-        // NSLog(@"Warning: IntersectionObserverReuseManager no dataKey，当前如果不是复用的 view 可以不用管");
+    if (!NotEmptyString(scope)) {
+        NSAssert(NO, @"");
         return;
     }
-    if (!scope || scope.length <= 0) {
-        NSAssert(NO, @"");
+    if (!NotEmptyString(dataKey)) {
+        // NSLog(@"Warning: IntersectionObserverReuseManager no dataKey，当前如果不是复用的 view 可以不用管");
         return;
     }
     NSMutableSet *dataKeys = self.visibleDataKeys && self.visibleDataKeys[scope] ? [[NSMutableSet alloc] initWithSet:self.visibleDataKeys[scope]] : [NSMutableSet set];
@@ -56,7 +58,7 @@
 
 - (void)addVisibleEntries:(NSArray <IntersectionObserverEntry *> *)entries toScope:(NSString *)scope {
     if (!entries || entries.count <= 0) {
-        NSLog(@"Info: IntersectionObserverReuseManager no entries");
+        NSLog(@"Info: IntersectionObserverReuseManager no entries (addVisibleEntries)");
         return;
     }
     [entries enumerateObjectsUsingBlock:^(IntersectionObserverEntry * _Nonnull entry, NSUInteger idx, BOOL * _Nonnull stop) {
@@ -65,12 +67,12 @@
 }
 
 - (void)removeVisibleDataKey:(NSString *)dataKey fromScope:(NSString *)scope {
-    if (!dataKey || dataKey.length <= 0) {
-        // NSLog(@"Warning: IntersectionObserverReuseManager no dataKey，当前如果不是复用的 view 可以不用管");
+    if (!NotEmptyString(scope)) {
+        NSAssert(NO, @"");
         return;
     }
-    if (!scope || scope.length <= 0) {
-        NSAssert(NO, @"");
+    if (!NotEmptyString(dataKey)) {
+        // NSLog(@"Warning: IntersectionObserverReuseManager no dataKey，当前如果不是复用的 view 可以不用管");
         return;
     }
     NSMutableSet *dataKeys = self.visibleDataKeys && self.visibleDataKeys[scope] ? [[NSMutableSet alloc] initWithSet:self.visibleDataKeys[scope]] : [NSMutableSet set];
@@ -82,7 +84,7 @@
 
 - (void)removeVisibleEntries:(NSArray <IntersectionObserverEntry *> *)entries fromScope:(NSString *)scope {
     if (!entries || entries.count <= 0) {
-        NSLog(@"Info: IntersectionObserverReuseManager no entries");
+        NSLog(@"Info: IntersectionObserverReuseManager no entries (removeVisibleEntries)");
         return;
     }
     [entries enumerateObjectsUsingBlock:^(IntersectionObserverEntry * _Nonnull entry, NSUInteger idx, BOOL * _Nonnull stop) {
@@ -91,12 +93,12 @@
 }
 
 - (void)addReusedDataKey:(NSString *)dataKey toScope:(NSString *)scope {
-    if (!dataKey || dataKey.length <= 0) {
-        NSLog(@"Warning: IntersectionObserverReuseManager no dataKey");
+    if (!NotEmptyString(scope)) {
+        NSAssert(NO, @"");
         return;
     }
-    if (!scope || scope.length <= 0) {
-        NSAssert(NO, @"");
+    if (!NotEmptyString(dataKey)) {
+        NSLog(@"Warning: IntersectionObserverReuseManager no dataKey");
         return;
     }
     if (!self.reusedDataKeys) {
@@ -110,12 +112,12 @@
 }
 
 - (void)removeReuseDataKey:(NSString *)dataKey fromScope:(NSString *)scope {
-    if (!dataKey || dataKey.length <= 0) {
-        NSLog(@"Warning: IntersectionObserverReuseManager no dataKey");
+    if (!NotEmptyString(scope)) {
+        NSAssert(NO, @"");
         return;
     }
-    if (!scope || scope.length <= 0) {
-        NSAssert(NO, @"");
+    if (!NotEmptyString(dataKey)) {
+        NSLog(@"Warning: IntersectionObserverReuseManager no dataKey");
         return;
     }
     if (!self.reusedDataKeys || self.reusedDataKeys.count <= 0) {
@@ -129,12 +131,12 @@
 }
 
 - (BOOL)isReusedDataKeyRemoved:(NSString *)dataKey inScope:(NSString *)scope {
-    if (!dataKey || dataKey.length <= 0) {
-        NSLog(@"Warning: IntersectionObserverReuseManager no dataKey");
+    if (!NotEmptyString(scope)) {
+        NSAssert(NO, @"");
         return YES;
     }
-    if (!scope || scope.length <= 0) {
-        NSAssert(NO, @"");
+    if (!NotEmptyString(dataKey)) {
+        NSLog(@"Warning: IntersectionObserverReuseManager no dataKey");
         return YES;
     }
     if (!self.reusedDataKeys || self.reusedDataKeys.count <= 0) {
@@ -144,6 +146,42 @@
     BOOL removed = ![self.reusedDataKeys containsObject:key];
     NSLog(@"zhoon reuse manager isRemoved %@ %@ %@", dataKey, @(removed), scope);
     return removed;
+}
+
+- (CGFloat)ratioForDataKey:(NSString *)dataKey inScope:(NSString *)scope {
+    if (!NotEmptyString(scope) || !NotEmptyString(dataKey)) {
+        NSAssert(NO, @"no scope or dataKey");
+        return 0;
+    }
+    if (!self.ratios) {
+        return 0;
+    }
+    NSString *key = [NSString stringWithFormat:@"%@_%@", scope, dataKey];
+    return [[self.ratios objectForKey:key] doubleValue]; // 要 double，否则有精度问题，例如存了 0.7，取出来是 0.6999999999
+}
+
+- (void)addRatio:(CGFloat)ratio toDataKey:(NSString *)dataKey toScope:(NSString *)scope {
+    if (!NotEmptyString(scope) || !NotEmptyString(dataKey)) {
+        NSAssert(NO, @"no scope or dataKey");
+        return;
+    }
+    if (!self.ratios) {
+        _ratios = [[NSMutableDictionary alloc] init];
+    }
+    NSString *key = [NSString stringWithFormat:@"%@_%@", scope, dataKey];
+    [self.ratios setObject:@(ratio) forKey:key];
+}
+
+- (void)removeRatioFromDataKey:(NSString *)dataKey fromScope:(NSString *)scope {
+    if (!NotEmptyString(scope) || !NotEmptyString(dataKey)) {
+        NSAssert(NO, @"no scope or dataKey");
+        return;
+    }
+    if (!self.ratios) {
+        return;
+    }
+    NSString *key = [NSString stringWithFormat:@"%@_%@", scope, dataKey];
+    [self.ratios removeObjectForKey:key];
 }
 
 @end

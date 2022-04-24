@@ -6,6 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 @class IntersectionObserverEntry;
 
@@ -15,6 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property(nonatomic, strong, readonly) NSMutableDictionary<NSString *, NSSet *> *visibleDataKeys;
 @property(nonatomic, strong, readonly) NSMutableSet<NSString *> *reusedDataKeys;
+@property(nonatomic, strong, readonly) NSMutableDictionary<NSString *, NSNumber *> *ratios;
 
 + (instancetype)shareInstance;
 
@@ -28,6 +30,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)addReusedDataKey:(NSString *)dataKey toScope:(NSString *)scope;
 - (void)removeReuseDataKey:(NSString *)dataKey fromScope:(NSString *)scope;
 - (BOOL)isReusedDataKeyRemoved:(NSString *)dataKey inScope:(NSString *)scope;
+
+- (CGFloat)ratioForDataKey:(NSString *)dataKey inScope:(NSString *)scope;
+- (void)addRatio:(CGFloat)ratio toDataKey:(NSString *)dataKey toScope:(NSString *)scope;
+- (void)removeRatioFromDataKey:(NSString *)dataKey fromScope:(NSString *)scope;
 
 @end
 

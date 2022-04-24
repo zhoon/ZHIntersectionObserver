@@ -158,11 +158,6 @@
 @implementation IntersectionObserverTargetOptions
 
 + (instancetype)initOptionsWithScope:(NSString *)scope
-                          targetView:(UIView *)targetView {
-    return [self initOptionsWithScope:scope dataKey:nil data:nil targetView:targetView];
-}
-
-+ (instancetype)initOptionsWithScope:(NSString *)scope
                              dataKey:(NSString * __nullable)dataKey
                           targetView:(UIView *)targetView {
     return [self initOptionsWithScope:scope dataKey:dataKey data:nil targetView:targetView];
@@ -191,11 +186,15 @@
     if ([dataKey isEqualToString:self.dataKey]) {
         return;
     } */
+    if (!dataKey || !data) {
+        NSAssert(NO, @"no dataKey or data");
+        return;
+    }
     self.dataKey = dataKey;
     self.data = data;
     if (self.targetView) {
         if (self.scope && self.scope.length > 0) {
-            NSLog(@"updateDataKey: view = %p, dataKey = %@", self.targetView, self.dataKey);
+            // NSLog(@"updateDataKey: view = %p, dataKey = %@", self.targetView, self.dataKey);
             [[IntersectionObserverManager shareInstance] emitObserverEventWithScope:self.scope forTargetView:self.targetView];
         }
     } else {
@@ -211,6 +210,7 @@
     if (_dataKey && _dataKey.length > 0 && _scope && _scope.length > 0) {
         [[IntersectionObserverReuseManager shareInstance] removeReuseDataKey:_dataKey fromScope:_scope];
         [[IntersectionObserverReuseManager shareInstance] removeVisibleDataKey:_dataKey fromScope:_scope];
+        [[IntersectionObserverReuseManager shareInstance] removeRatioFromDataKey:_dataKey fromScope:_scope];
     }
     NSLog(@"target dealloc");
 }

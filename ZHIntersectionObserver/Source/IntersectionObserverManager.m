@@ -143,6 +143,18 @@
     return self.observers;
 }
 
+- (IntersectionObserver *)observerForScope:(NSString *)scope {
+    if (!scope) {
+        return nil;
+    }
+    IntersectionObserver *observer = [[self allObservers] objectForKey:scope];
+    if (!observer) {
+        NSAssert(NO, @"no observer");
+        return nil;
+    }
+    return observer;
+}
+
 - (IntersectionObserver *)addObserverWithOptions:(IntersectionObserverContainerOptions *)options {
     if (!options) {
         NSAssert(NO, @"");
