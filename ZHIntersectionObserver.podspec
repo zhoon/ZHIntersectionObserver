@@ -16,7 +16,7 @@ Pod::Spec.new do |spec|
   #
 
   spec.name         = "ZHIntersectionObserver"
-  spec.version      = "0.0.5"
+  spec.version      = "0.0.6-rc.0"
   spec.summary      = "Intersection Observer for iOS."
 
   # This description is used to generate tags and improve search results.
