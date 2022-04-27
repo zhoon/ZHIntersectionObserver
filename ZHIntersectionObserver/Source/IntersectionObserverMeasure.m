@@ -298,30 +298,32 @@
     
     CGFloat ratio = 0;
     
-    // 是否 container 被移出当前可视 window。
-    // TODO: 先简单处理，container 没有整个在 window 内则认为 ratio = 0
-    if (containerView.window) {
-        CGRect containerRect = [containerView convertRect:containerView.bounds toView:containerView.window];
-        if (containerRect.origin.x < 0 ||
-            containerRect.origin.x + containerRect.size.width > containerView.window.frame.size.width) {
-            return @{@"ratio": @(ratio), @"targetViewportRect": @(CGRectZero), @"intersectionRect": @(CGRectZero)};
-        }
-        if (containerRect.origin.y < 0 ||
-            containerRect.origin.y + containerRect.size.height > containerView.window.frame.size.height) {
-            return @{@"ratio": @(ratio), @"targetViewportRect": @(CGRectZero), @"intersectionRect": @(CGRectZero)};
-        }
-    }
-    
     // target 相对于 container 的 rect
     CGRect targetContainerRect = [targetView convertRect:targetView.bounds toView:containerView];
     
     // target 在 container 中的 x y，需要考虑 scrollView，所以考虑 bounds
-    CGFloat x = CGRectGetMinX(targetContainerRect) - containerView.bounds.origin.x;
-    // 没加 floor 有些场景 intersectionRect 会错误，高度少了那么一点点
-    CGFloat y = CGRectGetMinY(targetContainerRect) - floor(containerView.bounds.origin.y);
-    CGFloat w = CGRectGetWidth(targetContainerRect);
-    CGFloat h = CGRectGetHeight(targetContainerRect);
-    CGRect targetViewportRect = CGRectMake(x, y, w, h);
+    CGFloat tx = CGRectGetMinX(targetContainerRect) - containerView.bounds.origin.x;
+    CGFloat ty = CGRectGetMinY(targetContainerRect) - floor(containerView.bounds.origin.y); // 没加 floor 有些场景 intersectionRect 会错误，高度少了那么一点点
+    
+    CGFloat cw = CGRectGetWidth(containerView.bounds);
+    CGFloat ch = CGRectGetHeight(containerView.bounds);
+    
+    // 是否 container 与当前 window 相交
+    if (containerView.window) {
+        CGRect containerRect = [containerView convertRect:containerView.bounds toView:containerView.window];
+        if (containerRect.origin.x < 0) {
+            tx += containerRect.origin.x;
+        }
+        if (containerRect.origin.y < 0) {
+            ty += containerRect.origin.y;
+        }
+        CGRect containerIntersectionRect = CGRectIntersection(containerView.window.bounds, containerRect);
+        cw = containerIntersectionRect.size.width;
+        ch = containerIntersectionRect.size.height;
+    }
+    
+    CGRect targetViewportRect = CGRectMake(tx, ty, CGRectGetWidth(targetContainerRect), CGRectGetHeight(targetContainerRect));
+    CGRect containerViewInsetRect = UIEdgeInsetsInsetRect(CGRectMake(0, 0, cw, ch), rootMargin);
     
     if (![self isCGRectValidated:targetViewportRect]) {
         return @{@"ratio": @(ratio), @"targetViewportRect": @(CGRectZero), @"intersectionRect": @(CGRectZero)};
@@ -332,7 +334,6 @@
         return @{@"ratio": @(ratio), @"targetViewportRect": @(CGRectZero), @"intersectionRect": @(CGRectZero)};
     }
     
-    CGRect containerViewInsetRect = UIEdgeInsetsInsetRect(CGRectMake(0, 0, CGRectGetWidth(containerView.bounds), CGRectGetHeight(containerView.bounds)), rootMargin);
     if (![self isCGRectValidated:containerViewInsetRect]) {
         return @{@"ratio": @(ratio), @"targetViewportRect": @(CGRectZero), @"intersectionRect": @(CGRectZero)};
     }
