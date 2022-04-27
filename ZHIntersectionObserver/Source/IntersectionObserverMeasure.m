@@ -86,7 +86,7 @@
             // 计算 ratio 和 rect
             NSDictionary *calcResult = [self calcRatioWithTargetView:curTargetView containerView:containerView rootMargin:rootMargin];
             CGFloat ratio = [[calcResult objectForKey:@"ratio"] doubleValue];
-            CGRect viewportTargetRect = [[calcResult objectForKey:@"viewportTargetRect"] CGRectValue];
+            CGRect targetViewportRect = [[calcResult objectForKey:@"targetViewportRect"] CGRectValue];
             CGRect intersectionRect = [[calcResult objectForKey:@"intersectionRect"] CGRectValue];
             
             BOOL isReused = NO;
@@ -109,7 +109,7 @@
                         [IntersectionObserverEntry initEntryWithTargetView:curTargetView
                                                                    dataKey:options.preDataKey
                                                                       data:options.preData
-                                                        boundingClientRect:viewportTargetRect
+                                                        boundingClientRect:targetViewportRect
                                                          intersectionRatio:ratio
                                                           intersectionRect:intersectionRect
                                                                isInsecting:NO
@@ -140,7 +140,7 @@
                     [IntersectionObserverEntry initEntryWithTargetView:curTargetView
                                                                dataKey:options.dataKey
                                                                   data:options.data
-                                                    boundingClientRect:viewportTargetRect
+                                                    boundingClientRect:targetViewportRect
                                                      intersectionRatio:ratio
                                                       intersectionRect:intersectionRect
                                                            isInsecting:isInsecting
@@ -254,7 +254,7 @@
         UIView *targetView = options.targetView;
         NSDictionary *calcResult = [self calcRatioWithTargetView:targetView containerView:containerView rootMargin:rootMargin];
         CGFloat ratio = [[calcResult objectForKey:@"ratio"] doubleValue];
-        CGRect viewportTargetRect = [[calcResult objectForKey:@"viewportTargetRect"] CGRectValue];
+        CGRect targetViewportRect = [[calcResult objectForKey:@"targetViewportRect"] CGRectValue];
         CGRect intersectionRect = [[calcResult objectForKey:@"intersectionRect"] CGRectValue];
         
         BOOL isInsecting = [self isInsectingWithRatio:ratio containerOptions:containerOptions targetOptions:options];
@@ -270,7 +270,7 @@
                 [IntersectionObserverEntry initEntryWithTargetView:targetView
                                                            dataKey:oldEntry.dataKey
                                                               data:oldEntry.data
-                                                boundingClientRect:viewportTargetRect
+                                                boundingClientRect:targetViewportRect
                                                  intersectionRatio:ratio
                                                   intersectionRect:intersectionRect
                                                        isInsecting:isInsecting
@@ -298,24 +298,47 @@
     
     CGFloat ratio = 0;
     
-    CGRect convertTargetRect = [targetView convertRect:targetView.bounds toView:containerView];
-    CGRect viewportTargetRect = CGRectMake(CGRectGetMinX(convertTargetRect) - containerView.bounds.origin.x, CGRectGetMinY(convertTargetRect) - floor(containerView.bounds.origin.y), CGRectGetWidth(convertTargetRect), CGRectGetHeight(convertTargetRect)); // 没加 floor 有些场景 intersectionRect 会错误，高度少了那么一点点
+    // target 相对于 container 的 rect
+    CGRect targetContainerRect = [targetView convertRect:targetView.bounds toView:containerView];
     
-    if (![self isCGRectValidated:viewportTargetRect]) {
-        return @{@"ratio": @(ratio), @"viewportTargetRect": @(CGRectZero), @"intersectionRect": @(CGRectZero)};
+    // target 在 container 中的 x y，需要考虑 scrollView，所以考虑 bounds
+    CGFloat tx = CGRectGetMinX(targetContainerRect) - containerView.bounds.origin.x;
+    CGFloat ty = CGRectGetMinY(targetContainerRect) - floor(containerView.bounds.origin.y); // 没加 floor 有些场景 intersectionRect 会错误，高度少了那么一点点
+    
+    CGFloat cw = CGRectGetWidth(containerView.bounds);
+    CGFloat ch = CGRectGetHeight(containerView.bounds);
+    
+    // 是否 container 与当前 window 相交
+    if (containerView.window) {
+        CGRect containerRect = [containerView convertRect:containerView.bounds toView:containerView.window];
+        if (containerRect.origin.x < 0) {
+            tx += containerRect.origin.x;
+        }
+        if (containerRect.origin.y < 0) {
+            ty += containerRect.origin.y;
+        }
+        CGRect containerIntersectionRect = CGRectIntersection(containerView.window.bounds, containerRect);
+        cw = containerIntersectionRect.size.width;
+        ch = containerIntersectionRect.size.height;
     }
     
-    CGFloat targetViewSize = CGRectGetWidth(convertTargetRect) * CGRectGetHeight(convertTargetRect);
+    CGRect targetViewportRect = CGRectMake(tx, ty, CGRectGetWidth(targetContainerRect), CGRectGetHeight(targetContainerRect));
+    CGRect containerViewInsetRect = UIEdgeInsetsInsetRect(CGRectMake(0, 0, cw, ch), rootMargin);
+    
+    if (![self isCGRectValidated:targetViewportRect]) {
+        return @{@"ratio": @(ratio), @"targetViewportRect": @(CGRectZero), @"intersectionRect": @(CGRectZero)};
+    }
+    
+    CGFloat targetViewSize = CGRectGetWidth(targetContainerRect) * CGRectGetHeight(targetContainerRect);
     if (targetViewSize <= 0) {
-        return @{@"ratio": @(ratio), @"viewportTargetRect": @(CGRectZero), @"intersectionRect": @(CGRectZero)};
+        return @{@"ratio": @(ratio), @"targetViewportRect": @(CGRectZero), @"intersectionRect": @(CGRectZero)};
     }
     
-    CGRect containerViewInsetRect = UIEdgeInsetsInsetRect(CGRectMake(0, 0, CGRectGetWidth(containerView.bounds), CGRectGetHeight(containerView.bounds)), rootMargin);
     if (![self isCGRectValidated:containerViewInsetRect]) {
-        return @{@"ratio": @(ratio), @"viewportTargetRect": @(CGRectZero), @"intersectionRect": @(CGRectZero)};
+        return @{@"ratio": @(ratio), @"targetViewportRect": @(CGRectZero), @"intersectionRect": @(CGRectZero)};
     }
     
-    CGRect intersectionRect = CGRectIntersection(containerViewInsetRect, viewportTargetRect);
+    CGRect intersectionRect = CGRectIntersection(containerViewInsetRect, targetViewportRect);
     if (![self isCGRectValidated:intersectionRect]) {
         intersectionRect = CGRectZero;
     }
@@ -323,7 +346,7 @@
     CGFloat intersectionSize = CGRectGetWidth(intersectionRect) * CGRectGetHeight(intersectionRect);
     ratio = intersectionSize > 0 ? ceil(intersectionSize / targetViewSize * 100) / 100 : 0;
     
-    return @{@"ratio": @(ratio), @"viewportTargetRect": @(viewportTargetRect), @"intersectionRect": @(intersectionRect)};
+    return @{@"ratio": @(ratio), @"targetViewportRect": @(targetViewportRect), @"intersectionRect": @(intersectionRect)};
 }
 
 + (BOOL)canReportWithRatio:(CGFloat)ratio
