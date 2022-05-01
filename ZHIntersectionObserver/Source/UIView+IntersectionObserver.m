@@ -16,6 +16,8 @@
 
 @property(nonatomic, weak) UIView *view;
 
+- (void)addObserverView:(UIView *)view;
+
 - (void)addObserver;
 - (void)removeObserver;
 
@@ -83,14 +85,10 @@ static char kAssociatedObjectKey_intersectionObserverTargetOptions;
         NSString *scope = intersectionObserverContainerOptions.scope;
         [self checkContainerOptions:intersectionObserverContainerOptions];
         if (scope && scope.length > 0) {
-            if (self._uiViewContainerObserver) {
-                [self._uiViewContainerObserver removeObserver];
-            }
             if (!self._uiViewContainerObserver) {
                 self._uiViewContainerObserver = [[_UIViewObserver alloc] init];
-                self._uiViewContainerObserver.view = self;
+                [self._uiViewContainerObserver addObserverView:self];
             }
-            [self._uiViewContainerObserver addObserver];
             self.intersectionObserver = [[IntersectionObserverManager shareInstance] addObserverWithOptions:intersectionObserverContainerOptions];
             // 启动监听
             [self.intersectionObserver observe];
@@ -101,7 +99,7 @@ static char kAssociatedObjectKey_intersectionObserverTargetOptions;
         }
     } else {
         if (self._uiViewContainerObserver) {
-            [self._uiViewContainerObserver removeObserver];
+            [self._uiViewContainerObserver addObserverView:nil];
         }
         if (self.intersectionObserver) {
             [[IntersectionObserverManager shareInstance] removeObserver: self.intersectionObserver];
@@ -141,14 +139,10 @@ static char kAssociatedObjectKey_intersectionObserverTargetOptions;
                 IntersectionObserver *targetObserver = observers[scope];
                 BOOL addTargetOptionsSucceed = [targetObserver addTargetOptions:self options:intersectionObserverTargetOptions];
                 if (addTargetOptionsSucceed) {
-                    if (self._uiViewTargetObserver) {
-                        [self._uiViewTargetObserver removeObserver];
-                    }
                     if (!self._uiViewTargetObserver) {
                         self._uiViewTargetObserver = [[_UIViewObserver alloc] init];
-                        self._uiViewTargetObserver.view = self;
+                        [self._uiViewTargetObserver addObserverView:self];
                     }
-                    [self._uiViewTargetObserver addObserver];
                     // 添加成功证明某些数据变了，需要重新触发一次检查
                     [[IntersectionObserverManager shareInstance] emitObserverEventWithScope:intersectionObserverTargetOptions.scope];
                 }
@@ -160,7 +154,7 @@ static char kAssociatedObjectKey_intersectionObserverTargetOptions;
         }
     } else {
         if (self._uiViewTargetObserver) {
-            [self._uiViewTargetObserver removeObserver];
+            [self._uiViewTargetObserver addObserverView:nil];
         }
         NSString *scope = self.intersectionObserverTargetOptions.scope;
         if (scope && scope.length > 0) {
@@ -213,12 +207,29 @@ static char kAssociatedObjectKey_intersectionObserverTargetOptions;
 
 @implementation _UIViewObserver
 
+- (void)addObserverView:(UIView *)view {
+    if (_view == view) {
+        if (_view) {
+            NSAssert(NO, @"不要添加相同的 View，一个 View 只能添加一次");
+        }
+        return;
+    }
+    if (_view) {
+        [self removeObserver];
+    }
+    _view = view;
+    if (_view) {
+        [self addObserver];
+    }
+}
+
 - (void)addObserver {
     if (_view) {
         [_view addObserver:self forKeyPath:@"alpha" options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:NULL];
         [_view addObserver:self forKeyPath:@"hidden" options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:NULL];
-        [_view.layer addObserver:self forKeyPath:@"bounds" options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:NULL];
-        [_view.layer addObserver:self forKeyPath:@"position" options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:NULL];
+        // 这里不要用 layer 的 bounds 和 position，有 kvo 的 crash
+        [_view addObserver:self forKeyPath:@"frame" options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:NULL];
+        [_view addObserver:self forKeyPath:@"center" options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:NULL];
     }
 }
 
@@ -226,8 +237,8 @@ static char kAssociatedObjectKey_intersectionObserverTargetOptions;
     if (_view) {
         [_view removeObserver:self forKeyPath:@"alpha"];
         [_view removeObserver:self forKeyPath:@"hidden"];
-        [_view.layer removeObserver:self forKeyPath:@"bounds"];
-        [_view.layer removeObserver:self forKeyPath:@"position"];
+        [_view removeObserver:self forKeyPath:@"frame"];
+        [_view removeObserver:self forKeyPath:@"center"];
     }
 }
 
@@ -241,15 +252,17 @@ static char kAssociatedObjectKey_intersectionObserverTargetOptions;
         if (!scope) {
             NSAssert(NO, @"no scope");
         }
-        if ([keyPath isEqualToString:@"bounds"]) {
-            CGRect oldBounds = [change[NSKeyValueChangeOldKey] CGRectValue];
-            CGRect newBounds = [change[NSKeyValueChangeNewKey] CGRectValue];
-            if (CGRectGetWidth(oldBounds) != CGRectGetWidth(newBounds) || CGRectGetHeight(oldBounds) != CGRectGetHeight(newBounds)) {
+        if ([keyPath isEqualToString:@"frame"]) {
+            CGRect oldFrame = [change[NSKeyValueChangeOldKey] CGRectValue];
+            CGRect newFrame = [change[NSKeyValueChangeNewKey] CGRectValue];
+            if (!CGRectEqualToRect(oldFrame, newFrame)) {
                 [_view handleViewVisibilityChangedEventForTargetView:_view.intersectionObserverTargetOptions ? _view : nil];
             }
         }
-        if ([keyPath isEqualToString:@"position"]) {
-            if (!CGPointEqualToPoint([change[NSKeyValueChangeOldKey] CGPointValue], [change[NSKeyValueChangeNewKey] CGPointValue])) {
+        if ([keyPath isEqualToString:@"center"]) {
+            CGPoint oldPoint = [change[NSKeyValueChangeOldKey] CGPointValue];
+            CGPoint newPoint = [change[NSKeyValueChangeNewKey] CGPointValue];
+            if (!CGPointEqualToPoint(oldPoint, newPoint)) {
                 [_view handleViewVisibilityChangedEventForTargetView:_view.intersectionObserverTargetOptions ? _view : nil];
             }
         }
