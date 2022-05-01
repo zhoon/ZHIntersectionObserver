@@ -77,8 +77,13 @@ static char kAssociatedObjectKey_intersectionObserverTargetOptions;
         NSAssert(NO, @"同一个 View 不能同时设置 target 和 container options");
         return;
     }
-    BOOL isSameOptions = [IntersectionObserverMeasure isContainerOptions:intersectionObserverContainerOptions sameWithOptions:self.intersectionObserverContainerOptions];
-    if (isSameOptions) {
+    if (intersectionObserverContainerOptions && self.intersectionObserverContainerOptions) {
+        NSAssert(NO, @"同一个 View 不能设置两个 intersectionObserverContainerOptions，如需更新 options 请调用 update 接口更新");
+        return;
+    }
+    if ([IntersectionObserverMeasure isContainerOptions:intersectionObserverContainerOptions
+                                        sameWithOptions:self.intersectionObserverContainerOptions]) {
+        // 相同 options 过滤
         return;
     }
     if (intersectionObserverContainerOptions) {
@@ -126,8 +131,13 @@ static char kAssociatedObjectKey_intersectionObserverTargetOptions;
         NSAssert(NO, @"同一个 View 不能同时设置 target 和 container options");
         return;
     }
-    BOOL isSameOptions = [IntersectionObserverMeasure isTargetOptions:intersectionObserverTargetOptions sameWithOptions:self.intersectionObserverTargetOptions];
-    if (isSameOptions) {
+    if (intersectionObserverTargetOptions && self.intersectionObserverTargetOptions) {
+        NSAssert(NO, @"同一个 View 不能设置两个 intersectionObserverTargetOptions，如需更新 options 请调用 update 接口更新");
+        return;
+    }
+    if ([IntersectionObserverMeasure isTargetOptions:intersectionObserverTargetOptions
+                                     sameWithOptions:self.intersectionObserverTargetOptions]) {
+        // 相同 options 过滤
         return;
     }
     NSDictionary<NSString *, IntersectionObserver *> *observers = [[IntersectionObserverManager shareInstance] allObservers];
