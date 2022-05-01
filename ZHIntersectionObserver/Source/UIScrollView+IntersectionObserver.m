@@ -16,6 +16,8 @@
 
 @property(nonatomic, weak) UIScrollView *scrollView;
 
+- (void)addObserverView:(UIScrollView *)view;
+
 - (void)addObserver;
 - (void)removeObserver;
 
@@ -51,22 +53,19 @@ static char kAssociatedObjectKey_throttlePrevDate;
 }
 
 - (void)setIntersectionObserverContainerOptions:(IntersectionObserverContainerOptions *)intersectionObserverContainerOptions {
-    if (self.intersectionObserverContainerOptions) {
-        if (!self._uiScrollViewObserver) {
-            NSAssert(NO, @"");
-        }
-        [self._uiScrollViewObserver removeObserver];
+    if (intersectionObserverContainerOptions && self.intersectionObserverContainerOptions) {
+        NSAssert(NO, @"同一个 View 不能设置两个 intersectionObserverContainerOptions，如需更新 options 请调用 update 接口更新");
+        return;
     }
     [super setIntersectionObserverContainerOptions:intersectionObserverContainerOptions];
     if (intersectionObserverContainerOptions) {
         if (!self._uiScrollViewObserver) {
             self._uiScrollViewObserver = [[_UIScrollViewObserver alloc] init];
-            self._uiScrollViewObserver.scrollView = self;
+            [self._uiScrollViewObserver addObserverView:self];
         }
-        [self._uiScrollViewObserver addObserver];
     } else {
         if (self._uiScrollViewObserver) {
-            [self._uiScrollViewObserver removeObserver];
+            [self._uiScrollViewObserver addObserverView:nil];
         }
     }
 }
@@ -117,6 +116,22 @@ static char kAssociatedObjectKey_throttlePrevDate;
 @end
 
 @implementation _UIScrollViewObserver
+
+- (void)addObserverView:(UIScrollView *)view {
+    if (_scrollView == view) {
+        if (_scrollView) {
+            NSAssert(NO, @"不要添加相同的 View，一个 View 只能添加一次");
+        }
+        return;
+    }
+    if (_scrollView) {
+        [self removeObserver];
+    }
+    _scrollView = view;
+    if (_scrollView) {
+        [self addObserver];
+    }
+}
 
 - (void)addObserver {
     if (_scrollView) {

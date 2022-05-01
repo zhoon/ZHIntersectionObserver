@@ -116,7 +116,7 @@
     
     __weak __typeof(self)weakSelf = self;
     
-    IntersectionObserverContainerOptions *containerOptions = [IntersectionObserverContainerOptions initOptionsWithScope:@"Example1" rootMargin:UIEdgeInsetsMake(CGRectGetMaxY(self.navigationController.navigationBar.frame), 0, 0, 0) thresholds:self.thresholds[0] containerView:self.containerView intersectionDuration:0 callback:^(NSString * _Nonnull scope, NSArray<IntersectionObserverEntry *> * _Nonnull entries) {
+    IntersectionObserverContainerOptions *containerOptions = [IntersectionObserverContainerOptions initOptionsWithScope:@"Example1" rootMargin:UIEdgeInsetsMake(CGRectGetMaxY(self.navigationController.navigationBar.frame), 0, 0, 0) thresholds:self.thresholds[0] intersectionDuration:0 callback:^(NSString * _Nonnull scope, NSArray<IntersectionObserverEntry *> * _Nonnull entries) {
         
         __strong __typeof(weakSelf)strongSelf = weakSelf;
         
@@ -131,7 +131,7 @@
     }];
     self.containerView.intersectionObserverContainerOptions = containerOptions;
 
-    IntersectionObserverTargetOptions *targetOptions = [IntersectionObserverTargetOptions initOptionsWithScope:@"Example1" dataKey:@"Example1" targetView:self.targetView];
+    IntersectionObserverTargetOptions *targetOptions = [IntersectionObserverTargetOptions initOptionsWithScope:@"Example1" dataKey:@"Example1"];
     self.targetView.intersectionObserverTargetOptions = targetOptions;
 }
 

@@ -53,14 +53,12 @@ NS_ASSUME_NONNULL_BEGIN
 /// 初始化方法
 + (instancetype)initOptionsWithScope:(NSString *)scope
                           rootMargin:(UIEdgeInsets)rootMargin
-                       containerView:(UIView *)containerView
                             callback:(IntersectionObserverCallback)callback;
 
 /// 初始化方法
 + (instancetype)initOptionsWithScope:(NSString *)scope
                           rootMargin:(UIEdgeInsets)rootMargin
                           thresholds:(NSArray <NSNumber *> *)thresholds
-                       containerView:(UIView *)containerView
                 intersectionDuration:(NSTimeInterval)intersectionDuration
                             callback:(IntersectionObserverCallback)callback;
 
@@ -69,7 +67,6 @@ NS_ASSUME_NONNULL_BEGIN
                           rootMargin:(UIEdgeInsets)rootMargin
                           thresholds:(NSArray <NSNumber *> *)thresholds
                             throttle:(NSTimeInterval)throttle
-                       containerView:(UIView *)containerView
           measureWhenAppStateChanged:(BOOL)measureWhenAppStateChanged
         measureWhenVisibilityChanged:(BOOL)measureWhenVisibilityChanged
                 intersectionDuration:(NSTimeInterval)intersectionDuration
@@ -99,14 +96,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// 初始化方法
 + (instancetype)initOptionsWithScope:(NSString *)scope
-                             dataKey:(NSString * __nullable)dataKey
-                          targetView:(UIView *)targetView;
+                             dataKey:(NSString * __nullable)dataKey;
 
 /// 初始化方法
 + (instancetype)initOptionsWithScope:(NSString *)scope
                              dataKey:(NSString * __nullable)dataKey
-                                data:(NSDictionary * __nullable)data
-                          targetView:(UIView *)targetView;
+                                data:(NSDictionary * __nullable)data;
 
 @end
 

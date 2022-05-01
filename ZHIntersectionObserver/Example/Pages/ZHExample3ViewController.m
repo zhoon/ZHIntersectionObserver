@@ -45,7 +45,7 @@
     if (self.intersectionObserverTargetOptions) {
         [self.intersectionObserverTargetOptions updateDataKey:text data:@{@"text": text}];
     } else {
-        IntersectionObserverTargetOptions *targetOptions = [IntersectionObserverTargetOptions initOptionsWithScope:@"Example3" dataKey:text data:@{@"text": text} targetView:self];
+        IntersectionObserverTargetOptions *targetOptions = [IntersectionObserverTargetOptions initOptionsWithScope:@"Example3" dataKey:text data:@{@"text": text}];
         self.intersectionObserverTargetOptions = targetOptions;
     }
     [self setNeedsLayout];
@@ -127,7 +127,7 @@
     
     __weak __typeof(self)weakSelf = self;
     
-    IntersectionObserverContainerOptions *containerOptions = [IntersectionObserverContainerOptions initOptionsWithScope:@"Example3" rootMargin:UIEdgeInsetsMake(CGRectGetMaxY(self.navigationController.navigationBar.frame), 0, 0, 0) thresholds:@[@1] containerView:self.view intersectionDuration:600 callback:^(NSString * _Nonnull scope, NSArray<IntersectionObserverEntry *> * _Nonnull entries) {
+    IntersectionObserverContainerOptions *containerOptions = [IntersectionObserverContainerOptions initOptionsWithScope:@"Example3" rootMargin:UIEdgeInsetsMake(CGRectGetMaxY(self.navigationController.navigationBar.frame), 0, 0, 0) thresholds:@[@1] intersectionDuration:600 callback:^(NSString * _Nonnull scope, NSArray<IntersectionObserverEntry *> * _Nonnull entries) {
         
         __strong __typeof(weakSelf)strongSelf = weakSelf;
         

@@ -39,13 +39,11 @@
 
 + (instancetype)initOptionsWithScope:(NSString *)scope
                           rootMargin:(UIEdgeInsets)rootMargin
-                       containerView:(UIView *)containerView
                             callback:(IntersectionObserverCallback)callback {
     return [self initOptionsWithScope:scope
                            rootMargin:rootMargin
                            thresholds:@[@1]
                              throttle:100
-                        containerView:containerView
            measureWhenAppStateChanged:YES
          measureWhenVisibilityChanged:YES
                  intersectionDuration:600
@@ -55,14 +53,12 @@
 + (instancetype)initOptionsWithScope:(NSString *)scope
                           rootMargin:(UIEdgeInsets)rootMargin
                           thresholds:(NSArray <NSNumber *> *)thresholds
-                       containerView:(UIView *)containerView
                 intersectionDuration:(NSTimeInterval)intersectionDuration
                             callback:(IntersectionObserverCallback)callback {
     return [self initOptionsWithScope:scope
                            rootMargin:rootMargin
                            thresholds:thresholds
                              throttle:100
-                        containerView:containerView
            measureWhenAppStateChanged:YES
          measureWhenVisibilityChanged:YES
                  intersectionDuration:intersectionDuration
@@ -73,7 +69,6 @@
                           rootMargin:(UIEdgeInsets)rootMargin
                           thresholds:(NSArray <NSNumber *> *)thresholds
                             throttle:(NSTimeInterval)throttle
-                       containerView:(UIView *)containerView
           measureWhenAppStateChanged:(BOOL)measureWhenAppStateChanged
         measureWhenVisibilityChanged:(BOOL)measureWhenVisibilityChanged
                 intersectionDuration:(NSTimeInterval)intersectionDuration
@@ -84,15 +79,14 @@
     if (!thresholds || thresholds.count <= 0) {
         NSAssert(NO, @"no threstholds");
     }
-    if (!containerView || !callback) {
-        NSAssert(NO, @"no containerView or callback");
+    if (!callback) {
+        NSAssert(NO, @"no callback");
     }
     IntersectionObserverContainerOptions *options = [[IntersectionObserverContainerOptions alloc] init];
     options.scope = scope;
     options.rootMargin = rootMargin;
     options.thresholds = thresholds;
     options.throttle = throttle;
-    options.containerView = containerView;
     options.callback = callback;
     options.intersectionDuration = intersectionDuration;
     options.measureWhenAppStateChanged = measureWhenAppStateChanged;
@@ -158,26 +152,20 @@
 @implementation IntersectionObserverTargetOptions
 
 + (instancetype)initOptionsWithScope:(NSString *)scope
-                             dataKey:(NSString * __nullable)dataKey
-                          targetView:(UIView *)targetView {
-    return [self initOptionsWithScope:scope dataKey:dataKey data:nil targetView:targetView];
+                             dataKey:(NSString * __nullable)dataKey {
+    return [self initOptionsWithScope:scope dataKey:dataKey data:nil];
 }
 
 + (instancetype)initOptionsWithScope:(NSString *)scope
                              dataKey:(NSString * __nullable)dataKey
-                                data:(NSDictionary * __nullable)data
-                          targetView:(UIView *)targetView {
+                                data:(NSDictionary * __nullable)data {
     if (!scope || scope.length <= 0) {
         NSAssert(NO, @"no scope");
-    }
-    if (!targetView) {
-        NSAssert(NO, @"no targetView");
     }
     IntersectionObserverTargetOptions *options = [[IntersectionObserverTargetOptions alloc] init];
     options.scope = scope;
     options.dataKey = dataKey;
     options.data = data;
-    options.targetView = targetView;
     return options;
 }
 

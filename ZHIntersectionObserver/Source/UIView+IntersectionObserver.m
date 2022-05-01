@@ -81,6 +81,9 @@ static char kAssociatedObjectKey_intersectionObserverTargetOptions;
         NSAssert(NO, @"同一个 View 不能设置两个 intersectionObserverContainerOptions，如需更新 options 请调用 update 接口更新");
         return;
     }
+    if (intersectionObserverContainerOptions) {
+        [intersectionObserverContainerOptions setValue:self forKey:@"containerView"];
+    }
     if ([IntersectionObserverMeasure isContainerOptions:intersectionObserverContainerOptions
                                         sameWithOptions:self.intersectionObserverContainerOptions]) {
         // 相同 options 过滤
@@ -134,6 +137,9 @@ static char kAssociatedObjectKey_intersectionObserverTargetOptions;
     if (intersectionObserverTargetOptions && self.intersectionObserverTargetOptions) {
         NSAssert(NO, @"同一个 View 不能设置两个 intersectionObserverTargetOptions，如需更新 options 请调用 update 接口更新");
         return;
+    }
+    if (intersectionObserverTargetOptions) {
+        [intersectionObserverTargetOptions setValue:self forKey:@"targetView"];
     }
     if ([IntersectionObserverMeasure isTargetOptions:intersectionObserverTargetOptions
                                      sameWithOptions:self.intersectionObserverTargetOptions]) {

@@ -69,7 +69,7 @@
     _view1 = ({
         UIView *r = [[UIView alloc] init];
         r.backgroundColor = [UIColor orangeColor];
-        IntersectionObserverTargetOptions *targetOptions = [IntersectionObserverTargetOptions initOptionsWithScope:@"Example4" dataKey:@"Example4_Alpha" data:@{@"text": @"alpha change"} targetView:r];
+        IntersectionObserverTargetOptions *targetOptions = [IntersectionObserverTargetOptions initOptionsWithScope:@"Example4" dataKey:@"Example4_Alpha" data:@{@"text": @"alpha change"}];
         r.intersectionObserverTargetOptions = targetOptions;
         [self.view addSubview:r];
         r;
@@ -78,7 +78,7 @@
     _view2 = ({
         UIView *r = [[UIView alloc] init];
         r.backgroundColor = [UIColor orangeColor];
-        IntersectionObserverTargetOptions *targetOptions = [IntersectionObserverTargetOptions initOptionsWithScope:@"Example4" dataKey:@"Example4_Hidden" data:@{@"text": @"hidden change"} targetView:r];
+        IntersectionObserverTargetOptions *targetOptions = [IntersectionObserverTargetOptions initOptionsWithScope:@"Example4" dataKey:@"Example4_Hidden" data:@{@"text": @"hidden change"}];
         r.intersectionObserverTargetOptions = targetOptions;
         [self.view addSubview:r];
         r;
@@ -87,7 +87,7 @@
     _view3 = ({
         UIView *r = [[UIView alloc] init];
         r.backgroundColor = [UIColor orangeColor];
-        IntersectionObserverTargetOptions *targetOptions = [IntersectionObserverTargetOptions initOptionsWithScope:@"Example4" dataKey:@"Example4_Remove" data:@{@"text": @"remove change"} targetView:r];
+        IntersectionObserverTargetOptions *targetOptions = [IntersectionObserverTargetOptions initOptionsWithScope:@"Example4" dataKey:@"Example4_Remove" data:@{@"text": @"remove change"}];
         r.intersectionObserverTargetOptions = targetOptions;
         [self.view addSubview:r];
         r;
@@ -109,7 +109,7 @@
     
     __weak __typeof(self)weakSelf = self;
     
-    IntersectionObserverContainerOptions *containerOptions = [IntersectionObserverContainerOptions initOptionsWithScope:@"Example4" rootMargin:UIEdgeInsetsMake(CGRectGetMaxY(self.navigationController.navigationBar.frame), 0, 0, 0) thresholds:@[@1] containerView:self.view intersectionDuration:300 callback:^(NSString * _Nonnull scope, NSArray<IntersectionObserverEntry *> * _Nonnull entries) {
+    IntersectionObserverContainerOptions *containerOptions = [IntersectionObserverContainerOptions initOptionsWithScope:@"Example4" rootMargin:UIEdgeInsetsMake(CGRectGetMaxY(self.navigationController.navigationBar.frame), 0, 0, 0) thresholds:@[@1] intersectionDuration:300 callback:^(NSString * _Nonnull scope, NSArray<IntersectionObserverEntry *> * _Nonnull entries) {
         
         __strong __typeof(weakSelf)strongSelf = weakSelf;
         

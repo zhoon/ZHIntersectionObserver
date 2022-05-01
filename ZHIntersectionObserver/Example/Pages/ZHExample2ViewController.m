@@ -75,7 +75,7 @@
 }
 
 - (void)initIntersectionObserver {
-    IntersectionObserverContainerOptions *containerOptions = [IntersectionObserverContainerOptions initOptionsWithScope:@"Example2" rootMargin:UIEdgeInsetsMake(CGRectGetMaxY(self.navigationController.navigationBar.frame), 0, 0, 0) thresholds:@[@1] containerView:self.tableView intersectionDuration:self.isDelay ? 600 : 0 callback:^(NSString * _Nonnull scope, NSArray<IntersectionObserverEntry *> * _Nonnull entries) {
+    IntersectionObserverContainerOptions *containerOptions = [IntersectionObserverContainerOptions initOptionsWithScope:@"Example2" rootMargin:UIEdgeInsetsMake(CGRectGetMaxY(self.navigationController.navigationBar.frame), 0, 0, 0) thresholds:@[@1] intersectionDuration:self.isDelay ? 600 : 0 callback:^(NSString * _Nonnull scope, NSArray<IntersectionObserverEntry *> * _Nonnull entries) {
         for (NSInteger i = 0; i < entries.count; i++) {
             IntersectionObserverEntry *entry = entries[i];
             ZHExample2UITableViewCell *cell = (ZHExample2UITableViewCell *)entry.targetView;
@@ -117,7 +117,7 @@
     cell.detailTextLabel.text = [NSString stringWithFormat:@"cell: %p", cell];
     
     if (!cell.intersectionObserverTargetOptions) {
-        IntersectionObserverTargetOptions *targetOptions = [IntersectionObserverTargetOptions initOptionsWithScope:@"Example2" dataKey:[NSString stringWithFormat:@"%@", @(indexPath.row)] data:@{@"row": @(indexPath.row)} targetView:cell];
+        IntersectionObserverTargetOptions *targetOptions = [IntersectionObserverTargetOptions initOptionsWithScope:@"Example2" dataKey:[NSString stringWithFormat:@"%@", @(indexPath.row)] data:@{@"row": @(indexPath.row)}];
         cell.intersectionObserverTargetOptions = targetOptions;
     } else {
         [cell.intersectionObserverTargetOptions updateDataKey:[NSString stringWithFormat:@"%@", @(indexPath.row)] data:@{@"row": @(indexPath.row)}];
