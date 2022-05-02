@@ -84,9 +84,7 @@ static char kAssociatedObjectKey_intersectionObserverTargetOptions;
     if (intersectionObserverContainerOptions) {
         [intersectionObserverContainerOptions setValue:self forKey:@"containerView"];
     }
-    if ([IntersectionObserverMeasure isContainerOptions:intersectionObserverContainerOptions
-                                        sameWithOptions:self.intersectionObserverContainerOptions]) {
-        // 相同 options 过滤
+    if ([self.intersectionObserverContainerOptions isEqual:intersectionObserverContainerOptions]) {
         return;
     }
     if (intersectionObserverContainerOptions) {
@@ -152,9 +150,7 @@ static char kAssociatedObjectKey_intersectionObserverTargetOptions;
     if (intersectionObserverTargetOptions) {
         [intersectionObserverTargetOptions setValue:self forKey:@"targetView"];
     }
-    if ([IntersectionObserverMeasure isTargetOptions:intersectionObserverTargetOptions
-                                     sameWithOptions:self.intersectionObserverTargetOptions]) {
-        // 相同 options 过滤
+    if ([self.intersectionObserverTargetOptions isEqual:intersectionObserverTargetOptions]) {
         return;
     }
     NSDictionary<NSString *, IntersectionObserver *> *observers = [[IntersectionObserverManager shareInstance] allObservers];

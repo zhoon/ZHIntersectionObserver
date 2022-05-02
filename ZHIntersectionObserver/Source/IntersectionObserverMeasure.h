@@ -19,14 +19,6 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)measureWithObserver:(IntersectionObserver *)observer;
 + (void)measureWithObserver:(IntersectionObserver *)observer forTargetView:(UIView * __nullable)targetView;
 
-/// 判断两个 options 是否相等
-+ (BOOL)isContainerOptions:(IntersectionObserverContainerOptions *)options1
-           sameWithOptions:(IntersectionObserverContainerOptions *)options2;
-
-/// 判断两个 options 是否相等
-+ (BOOL)isTargetOptions:(IntersectionObserverTargetOptions *)options1
-        sameWithOptions:(IntersectionObserverTargetOptions *)options2;
-
 /// 更新 view 不复用但是 dataKey 相同的场景下的 options，对齐其 preXXX 属性，避免判断错误
 + (void)updateOptionsPreProperties:(IntersectionObserverTargetOptions *)options
                     fromOldOptions:(IntersectionObserverTargetOptions *)oldOptions;

@@ -97,6 +97,30 @@
     return options;
 }
 
+- (BOOL)isEqual:(id)object {
+    if (!object || ![object isKindOfClass:[IntersectionObserverContainerOptions class]]) {
+        return NO;
+    }
+    IntersectionObserverContainerOptions *options = (IntersectionObserverContainerOptions *)object;
+    if (self == options) {
+        return YES;
+    }
+    if (self && options) {
+        if ([self.scope isEqualToString:options.scope] &&
+            [self.thresholds isEqualToArray:options.thresholds] &&
+            self.containerView == options.containerView &&
+            self.throttle == options.throttle &&
+            self.intersectionDuration == options.intersectionDuration &&
+            self.measureWhenAppStateChanged == options.measureWhenAppStateChanged &&
+            self.measureWhenVisibilityChanged == options.measureWhenVisibilityChanged &&
+            UIEdgeInsetsEqualToEdgeInsets(self.rootMargin, options.rootMargin)) {
+            return YES;
+        }
+        return NO;
+    }
+    return NO;
+}
+
 - (void)updateRootMargin:(UIEdgeInsets)rootMargin {
     if (UIEdgeInsetsEqualToEdgeInsets(rootMargin, self.rootMargin)) {
         return;
@@ -170,6 +194,22 @@
     options.dataKey = dataKey;
     options.data = data;
     return options;
+}
+
+- (BOOL)isEqual:(id)object {
+    if (!object || ![object isKindOfClass:[IntersectionObserverTargetOptions class]]) {
+        return NO;
+    }
+    IntersectionObserverTargetOptions *options = (IntersectionObserverTargetOptions *)object;
+    if (self && options) {
+        if ([self.scope isEqualToString:options.scope] &&
+            self.dataKey == options.dataKey &&
+            self.targetView == options.targetView) {
+            return YES;
+        }
+        return NO;
+    }
+    return NO;
 }
 
 - (void)updateDataKey:(NSString *)dataKey data:(id)data {

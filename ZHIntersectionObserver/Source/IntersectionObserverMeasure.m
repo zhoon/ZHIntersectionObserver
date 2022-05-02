@@ -458,34 +458,6 @@
     return matchedThreshold;
 }
 
-+ (BOOL)isContainerOptions:(IntersectionObserverContainerOptions *)options1 sameWithOptions:(IntersectionObserverContainerOptions *)options2 {
-    if (!options1 && !options2) {
-        return YES;
-    }
-    if (options1 && options2) {
-        BOOL isSameScope = [options1.scope isEqualToString:options2.scope];
-        BOOL isSameContainerView = options1.containerView == options2.containerView;
-        BOOL isSameThrottle = options1.throttle == options2.throttle;
-        BOOL isSameRootMargin = UIEdgeInsetsEqualToEdgeInsets(options1.rootMargin, options2.rootMargin);
-        BOOL isSameThresholds = [options1.thresholds isEqualToArray:options2.thresholds];
-        return isSameScope && isSameContainerView && isSameThrottle && isSameRootMargin && isSameThresholds;
-    }
-    return NO;
-}
-
-+ (BOOL)isTargetOptions:(IntersectionObserverTargetOptions *)options1 sameWithOptions:(IntersectionObserverTargetOptions *)options2 {
-    if (!options1 && !options2) {
-        return YES;
-    }
-    if (options1 && options2) {
-        BOOL isSameScope = [options1.scope isEqualToString:options2.scope];
-        BOOL isSameTarget = options1.targetView == options2.targetView;
-        BOOL isSameDataKey = [options1.dataKey isEqualToString:options2.dataKey];
-        return isSameScope && isSameTarget && isSameDataKey;
-    }
-    return NO;
-}
-
 + (BOOL)isCGRectValidated:(CGRect)rect {
     BOOL isCGRectNaN = isnan(rect.origin.x) || isnan(rect.origin.y) || isnan(rect.size.width) || isnan(rect.size.height);
     BOOL isCGRectInf = isinf(rect.origin.x) || isinf(rect.origin.y) || isinf(rect.size.width) || isinf(rect.size.height);
