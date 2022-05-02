@@ -134,10 +134,21 @@ static char kAssociatedObjectKey_intersectionObserverTargetOptions;
         NSAssert(NO, @"同一个 View 不能同时设置 target 和 container options");
         return;
     }
+    // 如果已经存在 target options，只拿出 dataKey 和 data 去更新旧的 target options 即可
     if (intersectionObserverTargetOptions && self.intersectionObserverTargetOptions) {
+        [intersectionObserverTargetOptions setValue:@YES forKey:@"notCleanWhenDealloc"];
+        if ([intersectionObserverTargetOptions.scope isEqualToString:self.intersectionObserverTargetOptions.scope]) {
+            id data = intersectionObserverTargetOptions.data;
+            NSString *dataKey = intersectionObserverTargetOptions.dataKey;
+            if (dataKey && dataKey.length > 0 && data) {
+                [self.intersectionObserverTargetOptions updateDataKey:dataKey data:data];
+                return;
+            }
+        }
         NSAssert(NO, @"同一个 View 不能设置两个 intersectionObserverTargetOptions，如需更新 options 请调用 update 接口更新");
         return;
     }
+    // 设置 targetView
     if (intersectionObserverTargetOptions) {
         [intersectionObserverTargetOptions setValue:self forKey:@"targetView"];
     }

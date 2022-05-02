@@ -33,6 +33,9 @@
 @property(nonatomic, copy ,readwrite, nullable) NSDictionary *data;
 @property(nonatomic, copy ,readwrite, nullable) NSString *dataKey;
 
+// 这类 options 在 dealloc 的时候不要清理 IntersectionObserverReuseManager 相关数据
+@property(nonatomic, strong) NSNumber *notCleanWhenDealloc;
+
 @end
 
 @implementation IntersectionObserverContainerOptions
@@ -195,10 +198,12 @@
 }
 
 - (void)dealloc {
-    if (_dataKey && _dataKey.length > 0 && _scope && _scope.length > 0) {
-        [[IntersectionObserverReuseManager shareInstance] removeReuseDataKey:_dataKey fromScope:_scope];
-        [[IntersectionObserverReuseManager shareInstance] removeVisibleDataKey:_dataKey fromScope:_scope];
-        [[IntersectionObserverReuseManager shareInstance] removeRatioFromDataKey:_dataKey fromScope:_scope];
+    if (!_notCleanWhenDealloc) {
+        if (_dataKey && _dataKey.length > 0 && _scope && _scope.length > 0) {
+            [[IntersectionObserverReuseManager shareInstance] removeReuseDataKey:_dataKey fromScope:_scope];
+            [[IntersectionObserverReuseManager shareInstance] removeVisibleDataKey:_dataKey fromScope:_scope];
+            [[IntersectionObserverReuseManager shareInstance] removeRatioFromDataKey:_dataKey fromScope:_scope];
+        }
     }
     NSLog(@"target dealloc");
 }

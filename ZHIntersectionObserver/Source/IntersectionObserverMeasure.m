@@ -59,8 +59,6 @@
         NSMutableArray *reusedEntries = [[NSMutableArray alloc] init];
         NSMutableArray *hideEntries = [[NSMutableArray alloc] init];
         
-        // NSLog(@"=================");
-        
         /*
         NSMutableArray *logDataKeys = [[NSMutableArray alloc] init];
         for (UIView *target in targetOptions.keyEnumerator) {

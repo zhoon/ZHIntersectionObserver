@@ -42,12 +42,9 @@
     _text = text;
     self.cardLabel.text = text;
     [self.cardLabel sizeToFit];
-    if (self.intersectionObserverTargetOptions) {
-        [self.intersectionObserverTargetOptions updateDataKey:text data:@{@"text": text}];
-    } else {
-        IntersectionObserverTargetOptions *targetOptions = [IntersectionObserverTargetOptions initOptionsWithScope:@"Example3" dataKey:text data:@{@"text": text}];
-        self.intersectionObserverTargetOptions = targetOptions;
-    }
+    
+    self.intersectionObserverTargetOptions = [IntersectionObserverTargetOptions initOptionsWithScope:@"Example3" dataKey:text data:@{@"text": text}];
+    
     [self setNeedsLayout];
 }
 
