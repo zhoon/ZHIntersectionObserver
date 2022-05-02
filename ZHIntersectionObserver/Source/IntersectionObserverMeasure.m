@@ -93,7 +93,7 @@
             void (^delayRemoveReuseDataKey)(void) = ^void() {
                 NSString *dataKey = options.dataKey;
                 // 之所以 delay remove，是因为这个时候对应的 dataKey 还没 add 进复用池中
-                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.4 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                     // NSLog(@"removeReuseDataKey %@ aaa", dataKey);
                     [[IntersectionObserverReuseManager shareInstance] removeReuseDataKey:dataKey fromScope:scope];
                 });
@@ -180,8 +180,8 @@
         }
         
         if (reusedEntries.count > 0) {
-            // 0.2s 之后检查被复用的 view 的 dataKey 是否还是曝光状态
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            // 检查被复用的 view 的 dataKey 是否还是曝光状态
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                 NSMutableArray *filterReusedEntries = [[NSMutableArray alloc] init];
                 NSMutableArray *testArrary = [[NSMutableArray alloc] init];
                 [reusedEntries enumerateObjectsUsingBlock:^(IntersectionObserverEntry * _Nonnull entry, NSUInteger idx, BOOL * _Nonnull stop) {
