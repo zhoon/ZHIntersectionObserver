@@ -12,31 +12,29 @@
 #import "IntersectionObserverManager.h"
 #import "IntersectionObserverMeasure.h"
 
-@interface _UIViewObserver : NSObject
-
-@property(nonatomic, weak) UIView *view;
-
-- (void)addObserverView:(UIView *)view;
-
-- (void)addObserver;
-- (void)removeObserver;
-
-@end
+//@interface _UIViewObserver : NSObject
+//
+//@property(nonatomic, weak) UIView *view;
+//
+//- (void)addObserverView:(UIView *)view;
+//
+//- (void)addObserver;
+//- (void)removeObserver;
+//
+//@end
 
 @interface UIView ()
 
-@property(nonatomic, strong) _UIViewObserver *_uiViewTargetObserver;
-@property(nonatomic, strong) _UIViewObserver *_uiViewContainerObserver;
+@property(nonatomic, assign) BOOL hasViewObserver;
 
 @end
 
 @implementation UIView (IntersectionObserver)
 
 static char kAssociatedObjectKey_intersectionObserver;
-static char kAssociatedObjectKey_uiViewTargetObserver;
-static char kAssociatedObjectKey_uiViewContainerObserver;
 static char kAssociatedObjectKey_intersectionObserverContainerOptions;
 static char kAssociatedObjectKey_intersectionObserverTargetOptions;
+static char kAssociatedObjectKey_hasViewObserver;
 
 + (void)load {
     static dispatch_once_t onceToken;
@@ -61,7 +59,40 @@ static char kAssociatedObjectKey_intersectionObserverTargetOptions;
                 }
             });
         }];
+        IntersectionObserver_OverrideImplementation([UIView class], @selector(willMoveToSuperview:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UIView *selfObject, UIView *newSuperview) {
+                // call super
+                void (*originSelectorIMP)(id, SEL, UIView *);
+                originSelectorIMP = (void (*)(id, SEL, UIView *))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, newSuperview);
+                // update observer
+                if (selfObject.hasViewObserver) {
+                    [selfObject removeKvoObserver];
+                }
+                if (newSuperview &&
+                    !selfObject.hasViewObserver &&
+                    (selfObject.intersectionObserverContainerOptions || selfObject.intersectionObserverTargetOptions)) {
+                    [selfObject addKvoObserver];
+                }
+            };
+        });
     });
+}
+
+- (void)addKvoObserver {
+    self.hasViewObserver = YES;
+    [self addObserver:self forKeyPath:@"alpha" options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:NULL];
+    [self addObserver:self forKeyPath:@"hidden" options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:NULL];
+    [self addObserver:self forKeyPath:@"layer.bounds" options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:NULL];
+    [self addObserver:self forKeyPath:@"layer.position" options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:NULL];
+}
+
+- (void)removeKvoObserver {
+    self.hasViewObserver = NO;
+    [self removeObserver:self forKeyPath:@"alpha"];
+    [self removeObserver:self forKeyPath:@"hidden"];
+    [self removeObserver:self forKeyPath:@"layer.bounds"];
+    [self removeObserver:self forKeyPath:@"layer.position"];
 }
 
 - (void)setIntersectionObserver:(IntersectionObserver *)intersectionObserver {
@@ -70,6 +101,14 @@ static char kAssociatedObjectKey_intersectionObserverTargetOptions;
 
 - (IntersectionObserver *)intersectionObserver {
     return objc_getAssociatedObject(self, &kAssociatedObjectKey_intersectionObserver);
+}
+
+- (void)setHasViewObserver:(BOOL)hasViewObserver {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_hasViewObserver, @(hasViewObserver), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+- (BOOL)hasViewObserver {
+    return [objc_getAssociatedObject(self, &kAssociatedObjectKey_hasViewObserver) boolValue];
 }
 
 - (void)setIntersectionObserverContainerOptions:(IntersectionObserverContainerOptions *)intersectionObserverContainerOptions {
@@ -91,9 +130,8 @@ static char kAssociatedObjectKey_intersectionObserverTargetOptions;
         NSString *scope = intersectionObserverContainerOptions.scope;
         [self checkContainerOptions:intersectionObserverContainerOptions];
         if (scope && scope.length > 0) {
-            if (!self._uiViewContainerObserver) {
-                self._uiViewContainerObserver = [[_UIViewObserver alloc] init];
-                [self._uiViewContainerObserver addObserverView:self];
+            if (!self.hasViewObserver) {
+                [self addKvoObserver];
             }
             self.intersectionObserver = [[IntersectionObserverManager shareInstance] addObserverWithOptions:intersectionObserverContainerOptions];
             // 启动监听
@@ -104,8 +142,8 @@ static char kAssociatedObjectKey_intersectionObserverTargetOptions;
             NSAssert(NO, @"no scope");
         }
     } else {
-        if (self._uiViewContainerObserver) {
-            [self._uiViewContainerObserver addObserverView:nil];
+        if (self.hasViewObserver) {
+            [self removeKvoObserver];
         }
         if (self.intersectionObserver) {
             [[IntersectionObserverManager shareInstance] removeObserver: self.intersectionObserver];
@@ -117,14 +155,6 @@ static char kAssociatedObjectKey_intersectionObserverTargetOptions;
 
 - (IntersectionObserverContainerOptions *)intersectionObserverContainerOptions {
     return objc_getAssociatedObject(self, &kAssociatedObjectKey_intersectionObserverContainerOptions);
-}
-
-- (void)set_uiViewContainerObserver:(_UIViewObserver *)_uiViewContainerObserver {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_uiViewContainerObserver, _uiViewContainerObserver, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-
-- (_UIViewObserver *)_uiViewContainerObserver {
-    return objc_getAssociatedObject(self, &kAssociatedObjectKey_uiViewContainerObserver);
 }
 
 - (void)setIntersectionObserverTargetOptions:(IntersectionObserverTargetOptions *)intersectionObserverTargetOptions {
@@ -162,9 +192,8 @@ static char kAssociatedObjectKey_intersectionObserverTargetOptions;
                 IntersectionObserver *targetObserver = observers[scope];
                 BOOL addTargetOptionsSucceed = [targetObserver addTargetOptions:self options:intersectionObserverTargetOptions];
                 if (addTargetOptionsSucceed) {
-                    if (!self._uiViewTargetObserver) {
-                        self._uiViewTargetObserver = [[_UIViewObserver alloc] init];
-                        [self._uiViewTargetObserver addObserverView:self];
+                    if (!self.hasViewObserver) {
+                        [self addKvoObserver];
                     }
                     // 添加成功证明某些数据变了，需要重新触发一次检查
                     [[IntersectionObserverManager shareInstance] emitObserverEventWithScope:intersectionObserverTargetOptions.scope];
@@ -176,8 +205,8 @@ static char kAssociatedObjectKey_intersectionObserverTargetOptions;
             NSAssert(NO, @"no target scope");
         }
     } else {
-        if (self._uiViewTargetObserver) {
-            [self._uiViewTargetObserver addObserverView:nil];
+        if (self.hasViewObserver) {
+            [self removeKvoObserver];
         }
         NSString *scope = self.intersectionObserverTargetOptions.scope;
         if (scope && scope.length > 0) {
@@ -192,14 +221,6 @@ static char kAssociatedObjectKey_intersectionObserverTargetOptions;
 
 - (IntersectionObserverTargetOptions *)intersectionObserverTargetOptions {
     return objc_getAssociatedObject(self, &kAssociatedObjectKey_intersectionObserverTargetOptions);
-}
-
-- (void)set_uiViewTargetObserver:(_UIViewObserver *)_uiViewTargetObserver {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_uiViewTargetObserver, _uiViewTargetObserver, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-
-- (_UIViewObserver *)_uiViewTargetObserver {
-    return objc_getAssociatedObject(self, &kAssociatedObjectKey_uiViewTargetObserver);
 }
 
 - (void)handleViewVisibilityChangedEventForTargetView:(UIView *)targetView {
@@ -226,102 +247,159 @@ static char kAssociatedObjectKey_intersectionObserverTargetOptions;
     }
 }
 
-@end
-
-@implementation _UIViewObserver
-
-- (void)addObserverView:(UIView *)view {
-    if (_view == view) {
-        if (_view) {
-            NSAssert(NO, @"不要添加相同的 View，一个 View 只能添加一次");
-        }
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context  {
+    // 有没有 options
+    if (!self.intersectionObserverContainerOptions && !self.intersectionObserverTargetOptions) {
         return;
     }
-    if (_view) {
-        [self removeObserver];
-    }
-    _view = view;
-    if (_view) {
-        [self addObserver];
-    }
-}
-
-- (void)addObserver {
-    if (_view) {
-        [_view addObserver:self forKeyPath:@"alpha" options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:NULL];
-        [_view addObserver:self forKeyPath:@"hidden" options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:NULL];
-        // 这里不要用 layer 的 bounds 和 position，有 kvo 的 crash
-        [_view addObserver:self forKeyPath:@"frame" options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:NULL];
-        [_view addObserver:self forKeyPath:@"center" options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:NULL];
-    }
-}
-
-- (void)removeObserver {
-    if (_view) {
-        [_view removeObserver:self forKeyPath:@"alpha"];
-        [_view removeObserver:self forKeyPath:@"hidden"];
-        [_view removeObserver:self forKeyPath:@"frame"];
-        [_view removeObserver:self forKeyPath:@"center"];
-    }
-}
-
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context  {
-    // 防止切到后台会切横竖屏截图
+    // 防止切到后台会切横竖屏截图触发变化也会检查
     if ([UIApplication sharedApplication].applicationState != UIApplicationStateActive) {
         return;
     }
-    if (_view.intersectionObserverTargetOptions || _view.intersectionObserverContainerOptions) {
-        NSString *scope = _view.intersectionObserverContainerOptions.scope ?: _view.intersectionObserverTargetOptions.scope;
-        if (!scope) {
-            NSAssert(NO, @"no scope");
+    NSString *scope = self.intersectionObserverContainerOptions.scope ?: self.intersectionObserverTargetOptions.scope;
+    if (!scope) {
+        NSAssert(NO, @"no scope");
+    }
+    if ([keyPath isEqualToString:@"layer.bounds"]) {
+        CGRect oldFrame = [change[NSKeyValueChangeOldKey] CGRectValue];
+        CGRect newFrame = [change[NSKeyValueChangeNewKey] CGRectValue];
+        if (!CGRectEqualToRect(oldFrame, newFrame)) {
+            [self handleViewVisibilityChangedEventForTargetView:self.intersectionObserverTargetOptions ? self : nil];
         }
-        if ([keyPath isEqualToString:@"frame"]) {
-            CGRect oldFrame = [change[NSKeyValueChangeOldKey] CGRectValue];
-            CGRect newFrame = [change[NSKeyValueChangeNewKey] CGRectValue];
-            if (!CGRectEqualToRect(oldFrame, newFrame)) {
-                [_view handleViewVisibilityChangedEventForTargetView:_view.intersectionObserverTargetOptions ? _view : nil];
-            }
+    }
+    if ([keyPath isEqualToString:@"layer.position"]) {
+        CGPoint oldPoint = [change[NSKeyValueChangeOldKey] CGPointValue];
+        CGPoint newPoint = [change[NSKeyValueChangeNewKey] CGPointValue];
+        if (!CGPointEqualToPoint(oldPoint, newPoint)) {
+            [self handleViewVisibilityChangedEventForTargetView:self.intersectionObserverTargetOptions ? self : nil];
         }
-        if ([keyPath isEqualToString:@"center"]) {
-            CGPoint oldPoint = [change[NSKeyValueChangeOldKey] CGPointValue];
-            CGPoint newPoint = [change[NSKeyValueChangeNewKey] CGPointValue];
-            if (!CGPointEqualToPoint(oldPoint, newPoint)) {
-                [_view handleViewVisibilityChangedEventForTargetView:_view.intersectionObserverTargetOptions ? _view : nil];
-            }
+    }
+    if ([keyPath isEqualToString:@"alpha"]) {
+        IntersectionObserver *observer = [[IntersectionObserverManager shareInstance] observerForScope:scope];
+        if (observer.containerOptions.measureWhenVisibilityChanged &&
+            [change[NSKeyValueChangeOldKey] doubleValue] != [change[NSKeyValueChangeNewKey] doubleValue]) {
+            // 延迟设置，一些场景只是临时某一瞬间修改然后改回来
+            __weak __typeof(self)weakView = self;
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                __strong __typeof(weakView)strongView = weakView;
+                if (strongView && strongView.alpha == [change[NSKeyValueChangeNewKey] doubleValue]) {
+                    [strongView handleViewVisibilityChangedEventForTargetView:strongView.intersectionObserverTargetOptions ? strongView : nil];
+                }
+            });
         }
-        if ([keyPath isEqualToString:@"alpha"]) {
-            IntersectionObserver *observer = [[IntersectionObserverManager shareInstance] observerForScope:scope];
-            if (observer.containerOptions.measureWhenVisibilityChanged &&
-                [change[NSKeyValueChangeOldKey] doubleValue] != [change[NSKeyValueChangeNewKey] doubleValue]) {
-                // 延迟设置，一些场景只是临时某一瞬间修改然后改回来
-                __weak __typeof(_view)weakView = _view;
-                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                    __strong __typeof(weakView)strongView = weakView;
-                    if (strongView && strongView.alpha == [change[NSKeyValueChangeNewKey] doubleValue]) {
-                        [strongView handleViewVisibilityChangedEventForTargetView:strongView.intersectionObserverTargetOptions ? strongView : nil];
-                    }
-                });
-            }
-        }
-        if ([keyPath isEqualToString:@"hidden"]) {
-            IntersectionObserver *observer = [[IntersectionObserverManager shareInstance] observerForScope:scope];
-            if (observer.containerOptions.measureWhenVisibilityChanged &&
-                [change[NSKeyValueChangeOldKey] boolValue] != [change[NSKeyValueChangeNewKey] boolValue]) {
-                // 延迟设置，一些场景只是临时某一瞬间修改然后改回来
-                __weak __typeof(_view)weakView = _view;
-                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                    __strong __typeof(weakView)strongView = weakView;
-                    if (strongView && strongView.hidden == [change[NSKeyValueChangeNewKey] boolValue]) {
-                        [strongView handleViewVisibilityChangedEventForTargetView:strongView.intersectionObserverTargetOptions ? strongView : nil];
-                    }
-                });
-            }
+    }
+    if ([keyPath isEqualToString:@"hidden"]) {
+        IntersectionObserver *observer = [[IntersectionObserverManager shareInstance] observerForScope:scope];
+        if (observer.containerOptions.measureWhenVisibilityChanged &&
+            [change[NSKeyValueChangeOldKey] boolValue] != [change[NSKeyValueChangeNewKey] boolValue]) {
+            // 延迟设置，一些场景只是临时某一瞬间修改然后改回来
+            __weak __typeof(self)weakView = self;
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                __strong __typeof(weakView)strongView = weakView;
+                if (strongView && strongView.hidden == [change[NSKeyValueChangeNewKey] boolValue]) {
+                    [strongView handleViewVisibilityChangedEventForTargetView:strongView.intersectionObserverTargetOptions ? strongView : nil];
+                }
+            });
         }
     }
 }
 
-- (void)dealloc {
-    [self removeObserver];
-}
-
 @end
+
+//@implementation _UIViewObserver
+//
+//- (void)addObserverView:(UIView *)view {
+//    if (_view == view) {
+//        if (_view) {
+//            NSAssert(NO, @"不要添加相同的 View，一个 View 只能添加一次");
+//        }
+//        return;
+//    }
+//    if (_view) {
+//        [self removeObserver];
+//    }
+//    _view = view;
+//    if (_view) {
+//        [self addObserver];
+//    }
+//}
+//
+//- (void)addObserver {
+//    if (_view) {
+//        [_view addObserver:self forKeyPath:@"alpha" options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:NULL];
+//        [_view addObserver:self forKeyPath:@"hidden" options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:NULL];
+//        // 这里不要用 layer 的 bounds 和 position，有 kvo 的 crash
+//        [_view addObserver:self forKeyPath:@"frame" options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:NULL];
+//        [_view addObserver:self forKeyPath:@"center" options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:NULL];
+//    }
+//}
+//
+//- (void)removeObserver {
+//    if (_view) {
+//        [_view removeObserver:self forKeyPath:@"alpha"];
+//        [_view removeObserver:self forKeyPath:@"hidden"];
+//        [_view removeObserver:self forKeyPath:@"frame"];
+//        [_view removeObserver:self forKeyPath:@"center"];
+//    }
+//}
+//
+//- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context  {
+//    // 防止切到后台会切横竖屏截图
+//    if ([UIApplication sharedApplication].applicationState != UIApplicationStateActive) {
+//        return;
+//    }
+//    if (_view.intersectionObserverTargetOptions || _view.intersectionObserverContainerOptions) {
+//        NSString *scope = _view.intersectionObserverContainerOptions.scope ?: _view.intersectionObserverTargetOptions.scope;
+//        if (!scope) {
+//            NSAssert(NO, @"no scope");
+//        }
+//        if ([keyPath isEqualToString:@"frame"]) {
+//            CGRect oldFrame = [change[NSKeyValueChangeOldKey] CGRectValue];
+//            CGRect newFrame = [change[NSKeyValueChangeNewKey] CGRectValue];
+//            if (!CGRectEqualToRect(oldFrame, newFrame)) {
+//                [_view handleViewVisibilityChangedEventForTargetView:_view.intersectionObserverTargetOptions ? _view : nil];
+//            }
+//        }
+//        if ([keyPath isEqualToString:@"center"]) {
+//            CGPoint oldPoint = [change[NSKeyValueChangeOldKey] CGPointValue];
+//            CGPoint newPoint = [change[NSKeyValueChangeNewKey] CGPointValue];
+//            if (!CGPointEqualToPoint(oldPoint, newPoint)) {
+//                [_view handleViewVisibilityChangedEventForTargetView:_view.intersectionObserverTargetOptions ? _view : nil];
+//            }
+//        }
+//        if ([keyPath isEqualToString:@"alpha"]) {
+//            IntersectionObserver *observer = [[IntersectionObserverManager shareInstance] observerForScope:scope];
+//            if (observer.containerOptions.measureWhenVisibilityChanged &&
+//                [change[NSKeyValueChangeOldKey] doubleValue] != [change[NSKeyValueChangeNewKey] doubleValue]) {
+//                // 延迟设置，一些场景只是临时某一瞬间修改然后改回来
+//                __weak __typeof(_view)weakView = _view;
+//                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+//                    __strong __typeof(weakView)strongView = weakView;
+//                    if (strongView && strongView.alpha == [change[NSKeyValueChangeNewKey] doubleValue]) {
+//                        [strongView handleViewVisibilityChangedEventForTargetView:strongView.intersectionObserverTargetOptions ? strongView : nil];
+//                    }
+//                });
+//            }
+//        }
+//        if ([keyPath isEqualToString:@"hidden"]) {
+//            IntersectionObserver *observer = [[IntersectionObserverManager shareInstance] observerForScope:scope];
+//            if (observer.containerOptions.measureWhenVisibilityChanged &&
+//                [change[NSKeyValueChangeOldKey] boolValue] != [change[NSKeyValueChangeNewKey] boolValue]) {
+//                // 延迟设置，一些场景只是临时某一瞬间修改然后改回来
+//                __weak __typeof(_view)weakView = _view;
+//                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+//                    __strong __typeof(weakView)strongView = weakView;
+//                    if (strongView && strongView.hidden == [change[NSKeyValueChangeNewKey] boolValue]) {
+//                        [strongView handleViewVisibilityChangedEventForTargetView:strongView.intersectionObserverTargetOptions ? strongView : nil];
+//                    }
+//                });
+//            }
+//        }
+//    }
+//}
+//
+//- (void)dealloc {
+//    [self removeObserver];
+//}
+//
+//@end

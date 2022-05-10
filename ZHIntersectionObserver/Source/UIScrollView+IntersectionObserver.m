@@ -12,36 +12,60 @@
 #import "IntersectionObserverManager.h"
 #import "UIView+IntersectionObserver.h"
 
-@interface _UIScrollViewObserver : NSObject
-
-@property(nonatomic, weak) UIScrollView *scrollView;
-
-- (void)addObserverView:(UIScrollView *)view;
-
-- (void)addObserver;
-- (void)removeObserver;
-
-@end
+//@interface _UIScrollViewObserver : NSObject
+//
+//@property(nonatomic, weak) UIScrollView *scrollView;
+//
+//- (void)addObserverView:(UIScrollView *)view;
+//
+//- (void)addObserver;
+//- (void)removeObserver;
+//
+//@end
 
 @interface UIScrollView ()
 
-@property(nonatomic, strong) _UIScrollViewObserver *_uiScrollViewObserver;
-
 @property(nonatomic, strong) NSDate *prevDate;
+@property(nonatomic, assign) BOOL hasScrollViewObserver;
 
 @end
 
 @implementation UIScrollView (IntersectionObserver)
 
-static char kAssociatedObjectKey_uiScrollViewObserver;
 static char kAssociatedObjectKey_throttlePrevDate;
+static char kAssociatedObjectKey_hasScrollViewObserver;
 
-- (void)set_uiScrollViewObserver:(_UIScrollViewObserver *)_uiScrollViewObserver {
-    objc_setAssociatedObject(self, &kAssociatedObjectKey_uiScrollViewObserver, _uiScrollViewObserver, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
++ (void)load {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        IntersectionObserver_OverrideImplementation([UIScrollView class], @selector(willMoveToSuperview:), ^id(__unsafe_unretained Class originClass, SEL originCMD, IMP (^originalIMPProvider)(void)) {
+            return ^(UIScrollView *selfObject, UIView *newSuperview) {
+                // call super
+                void (*originSelectorIMP)(id, SEL, UIView *);
+                originSelectorIMP = (void (*)(id, SEL, UIView *))originalIMPProvider();
+                originSelectorIMP(selfObject, originCMD, newSuperview);
+                // update observer
+                if (selfObject.hasScrollViewObserver) {
+                    [selfObject removeKvoObserver];
+                }
+                if (newSuperview &&
+                    !selfObject.hasScrollViewObserver &&
+                    selfObject.intersectionObserverContainerOptions) {
+                    [selfObject addKvoObserver];
+                }
+            };
+        });
+    });
 }
 
-- (_UIScrollViewObserver *)_uiScrollViewObserver {
-    return objc_getAssociatedObject(self, &kAssociatedObjectKey_uiScrollViewObserver);
+- (void)addKvoObserver {
+    self.hasScrollViewObserver = YES;
+    [self addObserver:self forKeyPath:@"contentOffset" options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:NULL];
+}
+
+- (void)removeKvoObserver {
+    self.hasScrollViewObserver = NO;
+    [self removeObserver:self forKeyPath:@"contentOffset"];
 }
 
 - (void)setPrevDate:(NSDate *)prevDate {
@@ -52,6 +76,14 @@ static char kAssociatedObjectKey_throttlePrevDate;
     return objc_getAssociatedObject(self, &kAssociatedObjectKey_throttlePrevDate);
 }
 
+- (void)setHasScrollViewObserver:(BOOL)hasScrollViewObserver {
+    objc_setAssociatedObject(self, &kAssociatedObjectKey_hasScrollViewObserver, @(hasScrollViewObserver), OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+- (BOOL)hasScrollViewObserver {
+    return [objc_getAssociatedObject(self, &kAssociatedObjectKey_hasScrollViewObserver) boolValue];
+}
+
 - (void)setIntersectionObserverContainerOptions:(IntersectionObserverContainerOptions *)intersectionObserverContainerOptions {
     if (intersectionObserverContainerOptions && self.intersectionObserverContainerOptions) {
         NSAssert(NO, @"同一个 View 不能设置两个 intersectionObserverContainerOptions，如需更新 options 请调用 update 接口更新");
@@ -59,13 +91,12 @@ static char kAssociatedObjectKey_throttlePrevDate;
     }
     [super setIntersectionObserverContainerOptions:intersectionObserverContainerOptions];
     if (intersectionObserverContainerOptions) {
-        if (!self._uiScrollViewObserver) {
-            self._uiScrollViewObserver = [[_UIScrollViewObserver alloc] init];
-            [self._uiScrollViewObserver addObserverView:self];
+        if (!self.hasScrollViewObserver) {
+            [self addKvoObserver];
         }
     } else {
-        if (self._uiScrollViewObserver) {
-            [self._uiScrollViewObserver addObserverView:nil];
+        if (self.hasScrollViewObserver) {
+            [self removeKvoObserver];
         }
     }
 }
@@ -113,66 +144,92 @@ static char kAssociatedObjectKey_throttlePrevDate;
     });
 }
 
-@end
-
-@implementation _UIScrollViewObserver
-
-- (void)addObserverView:(UIScrollView *)view {
-    if (_scrollView == view) {
-        if (_scrollView) {
-            NSAssert(NO, @"不要添加相同的 View，一个 View 只能添加一次");
-        }
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context  {
+    // 有没有 intersectionObserverContainerOptions
+    if (!self.intersectionObserverContainerOptions) {
         return;
     }
-    if (_scrollView) {
-        [self removeObserver];
-    }
-    _scrollView = view;
-    if (_scrollView) {
-        [self addObserver];
-    }
-}
-
-- (void)addObserver {
-    if (_scrollView) {
-        [_scrollView addObserver:self forKeyPath:@"contentOffset" options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:NULL];
-    }
-}
-
-- (void)removeObserver {
-    if (_scrollView) {
-        [_scrollView removeObserver:self forKeyPath:@"contentOffset"];
-    }
-}
-
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context  {
-    // 防止切到后台会切横竖屏截图
+    // 防止切到后台会切横竖屏截图触发变化也会检查 contentOffset
     if ([UIApplication sharedApplication].applicationState != UIApplicationStateActive) {
         return;
     }
-    if (_scrollView.intersectionObserverContainerOptions) {
-        if ([keyPath isEqualToString:@"contentOffset"]) {
-            CGPoint oldContenetOffset = [change[NSKeyValueChangeOldKey] CGPointValue];
-            CGPoint newContenetOffset = [change[NSKeyValueChangeNewKey] CGPointValue];
-            if (oldContenetOffset.x != newContenetOffset.x || oldContenetOffset.y != newContenetOffset.y) {
-                if (_scrollView.intersectionObserverContainerOptions.throttle > 0) {
-                    __weak __typeof(_scrollView)weakScrollView = _scrollView;
-                    [_scrollView runThrottleTask:^{
-                        __strong __typeof(weakScrollView)strongScrollView = weakScrollView;
-                        [strongScrollView handleScrollViewVisibilityChangedEvent];
-                    } interval:_scrollView.intersectionObserverContainerOptions.throttle];
-                } else {
-                    [_scrollView handleScrollViewVisibilityChangedEvent];
-                }
+    if ([keyPath isEqualToString:@"contentOffset"]) {
+        CGPoint oldContenetOffset = [change[NSKeyValueChangeOldKey] CGPointValue];
+        CGPoint newContenetOffset = [change[NSKeyValueChangeNewKey] CGPointValue];
+        if (oldContenetOffset.x != newContenetOffset.x || oldContenetOffset.y != newContenetOffset.y) {
+            if (self.intersectionObserverContainerOptions.throttle > 0) {
+                __weak __typeof(self)weakSelf = self;
+                [self runThrottleTask:^{
+                    __strong __typeof(weakSelf)strongSelf = weakSelf;
+                    [strongSelf handleScrollViewVisibilityChangedEvent];
+                } interval:self.intersectionObserverContainerOptions.throttle];
+            } else {
+                [self handleScrollViewVisibilityChangedEvent];
             }
         }
     }
 }
 
-- (void)dealloc {
-    [self removeObserver];
-}
-
 @end
+
+//@implementation _UIScrollViewObserver
+//
+//- (void)addObserverView:(UIScrollView *)view {
+//    if (_scrollView == view) {
+//        if (_scrollView) {
+//            NSAssert(NO, @"不要添加相同的 View，一个 View 只能添加一次");
+//        }
+//        return;
+//    }
+//    if (_scrollView) {
+//        [self removeObserver];
+//    }
+//    _scrollView = view;
+//    if (_scrollView) {
+//        [self addObserver];
+//    }
+//}
+//
+//- (void)addObserver {
+//    if (_scrollView) {
+//        [_scrollView addObserver:self forKeyPath:@"contentOffset" options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:NULL];
+//    }
+//}
+//
+//- (void)removeObserver {
+//    if (_scrollView) {
+//        [_scrollView removeObserver:self forKeyPath:@"contentOffset"];
+//    }
+//}
+//
+//- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context  {
+//    // 防止切到后台会切横竖屏截图
+//    if ([UIApplication sharedApplication].applicationState != UIApplicationStateActive) {
+//        return;
+//    }
+//    if (_scrollView.intersectionObserverContainerOptions) {
+//        if ([keyPath isEqualToString:@"contentOffset"]) {
+//            CGPoint oldContenetOffset = [change[NSKeyValueChangeOldKey] CGPointValue];
+//            CGPoint newContenetOffset = [change[NSKeyValueChangeNewKey] CGPointValue];
+//            if (oldContenetOffset.x != newContenetOffset.x || oldContenetOffset.y != newContenetOffset.y) {
+//                if (_scrollView.intersectionObserverContainerOptions.throttle > 0) {
+//                    __weak __typeof(_scrollView)weakScrollView = _scrollView;
+//                    [_scrollView runThrottleTask:^{
+//                        __strong __typeof(weakScrollView)strongScrollView = weakScrollView;
+//                        [strongScrollView handleScrollViewVisibilityChangedEvent];
+//                    } interval:_scrollView.intersectionObserverContainerOptions.throttle];
+//                } else {
+//                    [_scrollView handleScrollViewVisibilityChangedEvent];
+//                }
+//            }
+//        }
+//    }
+//}
+//
+//- (void)dealloc {
+//    [self removeObserver];
+//}
+//
+//@end
 
 
