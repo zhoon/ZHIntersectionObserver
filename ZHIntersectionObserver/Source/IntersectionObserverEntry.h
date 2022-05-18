@@ -26,7 +26,7 @@ typedef void (^IntersectionObserverCallback)(NSString *scope, NSArray<Intersecti
 @property(nonatomic, assign) CGFloat intersectionRatio;
 
 /// 目标元素与容器相交，则返回 true。如果返回 true，则 IntersectionObserverEntry 描述了变换到交叉时的状态；如果返回 false，那么可以由此判断，变换是从交叉状态到非交叉状态
-@property(nonatomic, assign) BOOL isInsecting;
+@property(nonatomic, assign) BOOL isIntersecting;
 
 /// 容器的 bounds
 @property(nonatomic, assign) CGRect rootBounds;
@@ -53,7 +53,7 @@ typedef void (^IntersectionObserverCallback)(NSString *scope, NSArray<Intersecti
                      boundingClientRect:(CGRect)boundingClientRect
                       intersectionRatio:(CGFloat)intersectionRatio
                        intersectionRect:(CGRect)intersectionRect
-                            isInsecting:(BOOL)isInsecting
+                         isIntersecting:(BOOL)isIntersecting
                              rootBounds:(CGRect)rootBounds
                                    time:(NSTimeInterval)time;
 

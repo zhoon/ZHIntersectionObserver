@@ -15,14 +15,14 @@
                      boundingClientRect:(CGRect)boundingClientRect
                       intersectionRatio:(CGFloat)intersectionRatio
                        intersectionRect:(CGRect)intersectionRect
-                            isInsecting:(BOOL)isInsecting
+                         isIntersecting:(BOOL)isIntersecting
                              rootBounds:(CGRect)rootBounds
                                    time:(NSTimeInterval)time {
     IntersectionObserverEntry *entry = [[IntersectionObserverEntry alloc] init];
     entry.boundingClientRect = boundingClientRect;
     entry.intersectionRatio = intersectionRatio;
     entry.intersectionRect = intersectionRect;
-    entry.isInsecting = isInsecting;
+    entry.isIntersecting = isIntersecting;
     entry.rootBounds = rootBounds;
     entry.targetView = targetView;
     entry.time = time;
@@ -32,7 +32,7 @@
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"<%@, %p>: boundingClientRect = %@, intersectionRatio = %@, intersectionRect = %@, isInsecting = %@, rootBounds = %@, target = %@, time = %@, dataKey = %@ data = %@", self.class, self,  @(_boundingClientRect), @(_intersectionRatio), @(_intersectionRect), @(_isInsecting), @(_rootBounds), _targetView, @(_time), _dataKey, _data];
+    return [NSString stringWithFormat:@"<%@, %p>: boundingClientRect = %@, intersectionRatio = %@, intersectionRect = %@, isIntersecting = %@, rootBounds = %@, target = %@, time = %@, dataKey = %@ data = %@", self.class, self,  @(_boundingClientRect), @(_intersectionRatio), @(_intersectionRect), @(_isIntersecting), @(_rootBounds), _targetView, @(_time), _dataKey, _data];
 }
 
 @end

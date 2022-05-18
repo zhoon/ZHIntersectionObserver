@@ -123,10 +123,10 @@
         for (NSInteger i = 0; i < entries.count; i++) {
             strongSelf.count++;
             IntersectionObserverEntry *entry = entries[i];
-            entry.targetView.backgroundColor = entry.isInsecting ? [UIColor orangeColor] : [UIColor redColor];
-            NSLog(@"Example1: isInsecting = %@", @(entry.isInsecting));
+            entry.targetView.backgroundColor = entry.isIntersecting ? [UIColor orangeColor] : [UIColor redColor];
+            NSLog(@"Example1: isIntersecting = %@", @(entry.isIntersecting));
             strongSelf.leftToplabel.text = strongSelf.rightToplabel.text = strongSelf.leftBottomlabel.text = strongSelf.rightBottomlabel.text = [NSString stringWithFormat:@"%@%@", @(ceil(entry.intersectionRatio * 100)), @"%"];
-            [strongSelf updateLabelText:[NSString stringWithFormat:@"可拖动 \n isInsecting = %@ \n changeCount = %@", @(entry.isInsecting), @(strongSelf.count)]];
+            [strongSelf updateLabelText:[NSString stringWithFormat:@"可拖动 \n isIntersecting = %@ \n changeCount = %@", @(entry.isIntersecting), @(strongSelf.count)]];
         }
     }];
     self.containerView.intersectionObserverContainerOptions = containerOptions;

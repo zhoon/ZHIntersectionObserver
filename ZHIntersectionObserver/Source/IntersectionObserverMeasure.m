@@ -40,7 +40,7 @@
 
 + (void)measureWithObserver:(IntersectionObserver *)observer forTargetView:(UIView * __nullable)targetView {
     
-    // updateDataKey 调用后马上开始重新计算，但是这个时候如果是复用的 view 例如 cell，如果复用前和复用后位置不一样，那么在计算 isInsecting 的时候可能会错误。例如被复用的 view 在复用前是在屏幕外，那么复用的时候计算出来的 isInsecting 就是在屏幕外的，所以需要等待 view 重新布局之后再计算，通过 dispatch_async 使得计算再下个 runloop 再触发
+    // updateDataKey 调用后马上开始重新计算，但是这个时候如果是复用的 view 例如 cell，如果复用前和复用后位置不一样，那么在计算 isIntersecting 的时候可能会错误。例如被复用的 view 在复用前是在屏幕外，那么复用的时候计算出来的 isIntersecting 就是在屏幕外的，所以需要等待 view 重新布局之后再计算，通过 dispatch_async 使得计算再下个 runloop 再触发
     dispatch_async(dispatch_get_main_queue(), ^{
         
         IntersectionObserverContainerOptions *containerOptions = observer.containerOptions;
@@ -88,7 +88,7 @@
             CGRect intersectionRect = [[calcResult objectForKey:@"intersectionRect"] CGRectValue];
             
             BOOL isReused = NO;
-            BOOL isInsecting = [self isInsectingWithRatio:ratio containerOptions:containerOptions targetOptions:options];
+            BOOL isIntersecting = [self isIntersectingWithRatio:ratio containerOptions:containerOptions targetOptions:options];
             
             void (^delayRemoveReuseDataKey)(void) = ^void() {
                 NSString *dataKey = options.dataKey;
@@ -110,7 +110,7 @@
                                                         boundingClientRect:targetViewportRect
                                                          intersectionRatio:ratio
                                                           intersectionRect:intersectionRect
-                                                               isInsecting:NO
+                                                            isIntersecting:NO
                                                                 rootBounds:containerView.bounds
                                                                       time:floor([NSDate date].timeIntervalSince1970 * 1000)];
                     // 把被复用的 dataKey 添加到一个复用池中
@@ -120,8 +120,8 @@
                 }
                 // 不能放到上面 if 里面，否则当可视的 dataKey1 复用了不可视的 dataKey3，可视的 dataKey1 不会走 remove，
                 // 从而导致这个可视的 dataKey1 被可视的 dataKey2 复用之后加入复用池后没有被移除，所以会收到多余的 hide 事件通知
-                if (isInsecting) {
-                    // 被复用并且 isInsecting = YES 需要延迟移除，避免收到 hide 事件通知
+                if (isIntersecting) {
+                    // 被复用并且 isIntersecting = YES 需要延迟移除，避免收到 hide 事件通知
                     isReused = YES;
                     delayRemoveReuseDataKey();
                 }
@@ -141,10 +141,10 @@
                                                     boundingClientRect:targetViewportRect
                                                      intersectionRatio:ratio
                                                       intersectionRect:intersectionRect
-                                                           isInsecting:isInsecting
+                                                        isIntersecting:isIntersecting
                                                             rootBounds:containerView.bounds
                                                                   time:floor([NSDate date].timeIntervalSince1970 * 1000)];
-                if (isInsecting) {
+                if (isIntersecting) {
                     // NSLog(@"showEntry %@", options.dataKey);
                     [entries addObject:entry];
                 } else {
@@ -255,9 +255,9 @@
         CGRect targetViewportRect = [[calcResult objectForKey:@"targetViewportRect"] CGRectValue];
         CGRect intersectionRect = [[calcResult objectForKey:@"intersectionRect"] CGRectValue];
         
-        BOOL isInsecting = [self isInsectingWithRatio:ratio containerOptions:containerOptions targetOptions:options];
+        BOOL isIntersecting = [self isIntersectingWithRatio:ratio containerOptions:containerOptions targetOptions:options];
         BOOL isDataKeyVisible = [[IntersectionObserverReuseManager shareInstance] isDataKeyVisible:oldEntry.dataKey inScope:scope];
-        BOOL canReport = [oldEntry.dataKey isEqualToString:options.dataKey] && isInsecting == oldEntry.isInsecting && !isDataKeyVisible;
+        BOOL canReport = [oldEntry.dataKey isEqualToString:options.dataKey] && isIntersecting == oldEntry.isIntersecting && !isDataKeyVisible;
         
         // 不需要更新 ratio，都是 delay 前就更新了
         options.preDataKey = options.dataKey;
@@ -271,7 +271,7 @@
                                                 boundingClientRect:targetViewportRect
                                                  intersectionRatio:ratio
                                                   intersectionRect:intersectionRect
-                                                       isInsecting:isInsecting
+                                                    isIntersecting:isIntersecting
                                                         rootBounds:containerView.bounds
                                                               time:floor([NSDate date].timeIntervalSince1970 * 1000)];
             [filterEntries addObject:entry];
@@ -352,7 +352,7 @@
              targetOptions:(IntersectionObserverTargetOptions *)targetOptions {
     
     CGFloat preRatio = [[IntersectionObserverReuseManager shareInstance] ratioForDataKey:targetOptions.dataKey inScope:containerOptions.scope];
-    BOOL isInsecting = [self isInsectingWithRatio:ratio containerOptions:containerOptions targetOptions:targetOptions];
+    BOOL isIntersecting = [self isIntersectingWithRatio:ratio containerOptions:containerOptions targetOptions:targetOptions];
     BOOL isDataKeyVisible = targetOptions.dataKey ? [[IntersectionObserverReuseManager shareInstance] isDataKeyVisible:targetOptions.dataKey inScope:containerOptions.scope] : NO;
     
     // 生命周期发生变化
@@ -360,16 +360,16 @@
         UIApplicationState prevApplicationState = [IntersectionObserverManager shareInstance].previousApplicationState;
         if (prevApplicationState != UIApplicationStateActive &&
             UIApplication.sharedApplication.applicationState == UIApplicationStateActive) {
-            // 重新计算，只要是 isInsecting 即可发送事件。如果没有设置 dataKey，回到前台会多发送一次曝光事件，所以屏蔽一下。
+            // 重新计算，只要是 isIntersecting 即可发送事件。如果没有设置 dataKey，回到前台会多发送一次曝光事件，所以屏蔽一下。
             if (targetOptions.dataKey) {
-                return isInsecting;
+                return isIntersecting;
             }
             return NO;
         }
         if (prevApplicationState != UIApplicationStateBackground &&
             UIApplication.sharedApplication.applicationState == UIApplicationStateBackground) {
-            // 直接返回 YES 会导致那些那些一开始没曝光的 item 会发送多 isInsecting = NO 的通知
-            // 如果改为 isInsecting != preInsecting 会导致 cell 不复用的情况切换前后台无法触发事件，所以需要通过 updateOptionsPreProperties:fromOldOptions 同步一下 options，但是还是会存在之前非曝光过的被复用到曝光的时候，isInsecting != preInsecting 为 NO（isInsecting 必定为 NO，没曝光的 item 的 preInsecting 也是 NO），导致当前没有发送 isInsecting = NO 事件，所以最后改成 isDataKeyVisible，但是要求设置 dataKey 才能生效。
+            // 直接返回 YES 会导致那些那些一开始没曝光的 item 会发送多 isIntersecting = NO 的通知
+            // 如果改为 isIntersecting != preInsecting 会导致 cell 不复用的情况切换前后台无法触发事件，所以需要通过 updateOptionsPreProperties:fromOldOptions 同步一下 options，但是还是会存在之前非曝光过的被复用到曝光的时候，isIntersecting != preInsecting 为 NO（isIntersecting 必定为 NO，没曝光的 item 的 preInsecting 也是 NO），导致当前没有发送 isIntersecting = NO 事件，所以最后改成 isDataKeyVisible，但是要求设置 dataKey 才能生效。
             return [[IntersectionObserverReuseManager shareInstance] isDataKeyVisible:targetOptions.dataKey inScope:containerOptions.scope];
         }
     }
@@ -379,26 +379,26 @@
         BOOL targetViewVisible = [self isTargetViewVisible:targetOptions.targetView inContainerView:containerOptions.containerView];
         BOOL containerViewVisible = [self isContainerViewVisible:containerOptions.containerView];
         if (targetViewVisible != targetOptions.preVisible || containerViewVisible != containerOptions.preVisible) {
-            return isInsecting ? !isDataKeyVisible : isDataKeyVisible;
+            return isIntersecting ? !isDataKeyVisible : isDataKeyVisible;
         }
     }
     
     // 数据发生变化（或者复用）
     if (NotEmptyString(targetOptions.dataKey) && NotEmptyString(targetOptions.preDataKey) && ![targetOptions.dataKey isEqualToString:targetOptions.preDataKey]) {
-        // NSLog(@"数据变化 dataChange %@ %@ %@", targetOptions.dataKey, @(isInsecting), @(isDataKeyVisible));
-        return isInsecting ? !isDataKeyVisible : isDataKeyVisible;
+        // NSLog(@"数据变化 dataChange %@ %@ %@", targetOptions.dataKey, @(isIntersecting), @(isDataKeyVisible));
+        return isIntersecting ? !isDataKeyVisible : isDataKeyVisible;
     }
     
     // 前后 ratio 变化
-    BOOL preInsecting = [self isInsectingWithRatio:preRatio containerOptions:containerOptions targetOptions:targetOptions];
-    if (isInsecting != preInsecting) {
+    BOOL preInsecting = [self isIntersectingWithRatio:preRatio containerOptions:containerOptions targetOptions:targetOptions];
+    if (isIntersecting != preInsecting) {
         // NSLog(@"前后 ratio 变化 %@ %@ %@ %@", targetOptions.dataKey, @(ratio), @(preRatio), @(isDataKeyVisible));
-        return isInsecting ? !isDataKeyVisible : isDataKeyVisible;
+        return isIntersecting ? !isDataKeyVisible : isDataKeyVisible;
     }
     
     // 是否达到某个 ratio
     BOOL reachRatio = [self lastMatchThreshold:containerOptions.thresholds ratio:ratio] != [self lastMatchThreshold:containerOptions.thresholds ratio:preRatio];
-    // NSLog(@"达到 reachRatio %@ %@ %@ %@ %@", targetOptions.dataKey, @(ratio), @(preRatio), @(isInsecting), @(reachRatio));
+    // NSLog(@"达到 reachRatio %@ %@ %@ %@ %@", targetOptions.dataKey, @(ratio), @(preRatio), @(isIntersecting), @(reachRatio));
     return reachRatio;
 }
 
@@ -426,9 +426,9 @@
     return visible;
 }
 
-+ (BOOL)isInsectingWithRatio:(CGFloat)ratio
-            containerOptions:(IntersectionObserverContainerOptions *)containerOptions
-               targetOptions:(IntersectionObserverTargetOptions *)targetOptions {
++ (BOOL)isIntersectingWithRatio:(CGFloat)ratio
+               containerOptions:(IntersectionObserverContainerOptions *)containerOptions
+                  targetOptions:(IntersectionObserverTargetOptions *)targetOptions {
     if (containerOptions.measureWhenAppStateChanged &&
         UIApplication.sharedApplication.applicationState == UIApplicationStateBackground) {
         return NO;

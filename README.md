@@ -42,7 +42,7 @@ IntersectionObserverContainerOptions *containerOptions = [IntersectionObserverCo
     __strong __typeof(weakSelf)strongSelf = weakSelf;
     for (NSInteger i = 0; i < entries.count; i++) {
         IntersectionObserverEntry *entry = entries[i];
-        if (entry.isInsecting) {
+        if (entry.isIntersecting) {
             // 进入可视区域
         }
     }

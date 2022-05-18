@@ -115,7 +115,7 @@
         
         for (NSInteger i = 0; i < entries.count; i++) {
             IntersectionObserverEntry *entry = entries[i];
-            if (entry.isInsecting) {
+            if (entry.isIntersecting) {
                 NSString *text = [NSString stringWithFormat:@"✅ 曝光：%@", [entry.data objectForKey:@"text"]];
                 NSString *newText = [NSString stringWithFormat:@"%@\n%@", text, strongSelf.logLabel.text ?: @""];
                 strongSelf.logLabel.text = newText;

@@ -130,16 +130,16 @@
         
         for (NSInteger i = 0; i < entries.count; i++) {
             IntersectionObserverEntry *entry = entries[i];
-            if (entry.isInsecting) {
+            if (entry.isIntersecting) {
                 NSString *text = [NSString stringWithFormat:@"✅ 曝光：%@", [entry.data objectForKey:@"text"]];
                 NSString *newText = [NSString stringWithFormat:@"%@\n%@", text, strongSelf.logLabel.text ?: @""];
                 strongSelf.logLabel.text = [newText substringToIndex:MIN(180, newText.length)];
-                NSLog(@"Example3: dataKey = %@, isInsecting = %@", entry.dataKey, @(entry.isInsecting));
+                NSLog(@"Example3: dataKey = %@, isIntersecting = %@", entry.dataKey, @(entry.isIntersecting));
             } else {
                 NSString *text = [NSString stringWithFormat:@"❌ 隐藏：%@", [entry.data objectForKey:@"text"]];
                 NSString *newText = [NSString stringWithFormat:@"%@\n%@", text, strongSelf.logLabel.text ?: @""];
                 strongSelf.logLabel.text = [newText substringToIndex:MIN(180, newText.length)];
-                NSLog(@"Example3: dataKey = %@, isInsecting = %@", entry.dataKey, @(entry.isInsecting));
+                NSLog(@"Example3: dataKey = %@, isIntersecting = %@", entry.dataKey, @(entry.isIntersecting));
             }
         }
         

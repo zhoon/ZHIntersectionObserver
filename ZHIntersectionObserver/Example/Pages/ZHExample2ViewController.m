@@ -79,9 +79,9 @@
         for (NSInteger i = 0; i < entries.count; i++) {
             IntersectionObserverEntry *entry = entries[i];
             ZHExample2UITableViewCell *cell = (ZHExample2UITableViewCell *)entry.targetView;
-            NSLog(@"Example2 entry, isInsecting = %@ index = %@", @(entry.isInsecting), entry.data[@"row"]);
+            NSLog(@"Example2 entry, isIntersecting = %@ index = %@", @(entry.isIntersecting), entry.data[@"row"]);
             if (cell) {
-                cell.backgroundColor = entry.isInsecting ? [[UIColor orangeColor] colorWithAlphaComponent:0.2] : [UIColor whiteColor];
+                cell.backgroundColor = entry.isIntersecting ? [[UIColor orangeColor] colorWithAlphaComponent:0.2] : [UIColor whiteColor];
             }
         }
     }];
